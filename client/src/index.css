@@ -5,11 +5,44 @@
 /* ============================================================
    DOCKOPS — Marine Construction Operations
    Dark-first, navy/steel/teal. Industrial, dense, premium.
+   ============================================================
+
+   FLUID SCALING SYSTEM
+   Uses clamp() + viewport units so the entire UI — text, spacing,
+   borders, radius — smoothly scales from 320px mobile all the way
+   to 2560px ultrawide with zero breakpoint jumps.
+
+   Formula: clamp(MIN, PREFERRED_VW, MAX)
+   - MIN  = smallest acceptable value (mobile)
+   - VW   = viewport-relative preferred (scales with screen width)
+   - MAX  = cap for very large displays
    ============================================================ */
 
 :root {
-  /* Base font size — bumped to 18px so all rem units scale up on large monitors */
-  font-size: 18px;
+  /* ── Fluid base font ──────────────────────────────────────────
+     Smoothly scales: 14px @ 320px wide → 18px @ 1920px → 22px @ 2560px
+     All rem units across the whole app scale with this one value. */
+  font-size: clamp(14px, 0.5vw + 12px, 22px);
+
+  /* ── Fluid spacing scale (used via var in components) ─────────
+     Base unit scales proportionally with viewport */
+  --space-1: clamp(0.2rem, 0.3vw, 0.35rem);
+  --space-2: clamp(0.4rem, 0.5vw, 0.65rem);
+  --space-3: clamp(0.6rem, 0.75vw, 1rem);
+  --space-4: clamp(0.875rem, 1vw, 1.25rem);
+  --space-6: clamp(1.25rem, 1.5vw, 1.75rem);
+  --space-8: clamp(1.5rem, 2vw, 2.5rem);
+
+  /* ── Fluid border radius ──────────────────────────────────────
+     Slightly larger radius on bigger screens feels more premium */
+  --radius: clamp(0.375rem, 0.4vw, 0.625rem);
+  --radius-sm: clamp(0.2rem, 0.25vw, 0.375rem);
+  --radius-lg: clamp(0.5rem, 0.6vw, 0.875rem);
+
+  /* ── Fluid sidebar width ──────────────────────────────────────
+     Sidebar stays proportional — not too narrow, not too wide */
+  --sidebar-width: clamp(200px, 14vw, 280px);
+  --sidebar-collapsed-width: clamp(48px, 3.5vw, 64px);
 
   /* Light mode kept simple — app forces .dark by default */
   --button-outline: rgba(0, 0, 0, 0.1);
@@ -56,7 +89,6 @@
   --font-sans: "Inter", "DM Sans", system-ui, sans-serif;
   --font-serif: "Source Serif 4", Georgia, serif;
   --font-mono: "JetBrains Mono", Menlo, monospace;
-  --radius: 0.5rem;
   --tracking-normal: 0em;
   --spacing: 0.25rem;
 }
@@ -70,17 +102,16 @@
   --elevate-1: rgba(255, 255, 255, 0.035);
   --elevate-2: rgba(255, 255, 255, 0.07);
 
-  /* Deep navy / slate canvas */
-  --background: 215 35% 7%;          /* ~#0B1220 */
-  --foreground: 210 25% 94%;         /* off-white */
-  --border: 215 22% 18%;             /* steel */
-  --card: 215 32% 10%;               /* panel */
+  --background: 215 35% 7%;
+  --foreground: 210 25% 94%;
+  --border: 215 22% 18%;
+  --card: 215 32% 10%;
   --card-foreground: 210 25% 94%;
   --card-border: 215 22% 17%;
-  --sidebar: 215 38% 6%;             /* darker than canvas */
+  --sidebar: 215 38% 6%;
   --sidebar-foreground: 210 22% 86%;
   --sidebar-border: 215 22% 14%;
-  --sidebar-primary: 174 58% 48%;    /* teal */
+  --sidebar-primary: 174 58% 48%;
   --sidebar-primary-foreground: 215 40% 8%;
   --sidebar-accent: 215 28% 14%;
   --sidebar-accent-foreground: 210 25% 94%;
@@ -89,7 +120,7 @@
   --popover-foreground: 210 25% 94%;
   --popover-border: 215 22% 18%;
 
-  --primary: 174 58% 48%;            /* muted sea-teal */
+  --primary: 174 58% 48%;
   --primary-foreground: 215 40% 8%;
   --secondary: 215 25% 16%;
   --secondary-foreground: 210 25% 94%;
@@ -102,34 +133,35 @@
   --input: 215 22% 22%;
   --ring: 174 58% 48%;
 
-  --chart-1: 174 58% 52%;            /* teal */
-  --chart-2: 210 80% 62%;            /* steel blue */
-  --chart-3: 38 92% 60%;             /* amber */
-  --chart-4: 0 72% 58%;              /* danger red */
-  --chart-5: 215 18% 55%;            /* slate */
+  --chart-1: 174 58% 52%;
+  --chart-2: 210 80% 62%;
+  --chart-3: 38 92% 60%;
+  --chart-4: 0 72% 58%;
+  --chart-5: 215 18% 55%;
 }
 
 @layer base {
   * { @apply border-border; }
 
-  html {
+  html, body, #root {
     height: 100%;
+    width: 100%;
   }
 
   body {
-    height: 100%;
     @apply font-sans antialiased bg-background text-foreground;
     font-feature-settings: "ss01", "cv11";
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    /* Fluid line height — slightly looser on big screens */
+    line-height: clamp(1.4, 1.4 + 0.1vw, 1.65);
   }
 
-  /* Root container — centered with max-width for wide/ultrawide monitors */
-  #root {
-    height: 100%;
-    max-width: 1600px;
-    margin: 0 auto;
-  }
+  /* Fluid heading sizes — scale naturally with screen */
+  h1 { font-size: clamp(1.5rem, 2vw + 0.5rem, 2.5rem); font-weight: 700; }
+  h2 { font-size: clamp(1.2rem, 1.5vw + 0.4rem, 2rem);  font-weight: 600; }
+  h3 { font-size: clamp(1rem, 1vw + 0.35rem, 1.5rem);   font-weight: 600; }
+  h4 { font-size: clamp(0.9rem, 0.75vw + 0.3rem, 1.2rem); font-weight: 500; }
 
   /* Tabular numerals everywhere data is shown */
   .tabular-nums, .num, td, th {
@@ -137,7 +169,7 @@
   }
 
   /* Custom scrollbar — thin and unobtrusive */
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar { width: clamp(6px, 0.5vw, 10px); height: clamp(6px, 0.5vw, 10px); }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb {
     background: hsl(var(--border));
@@ -160,7 +192,7 @@
   .status-neutral { color: hsl(215 14% 70%); background-color: hsl(215 25% 16% / 0.7); border-color: hsl(215 22% 22%); }
   .status-info    { color: hsl(210 80% 70%); background-color: hsl(210 80% 60% / 0.1); border-color: hsl(210 80% 60% / 0.25); }
 
-  /* Subtle panel separator that reads as 'etched' on dark navy */
+  /* Subtle panel separator */
   .panel-divider {
     background-image: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
     height: 1px;
@@ -177,7 +209,7 @@
     background-image:
       linear-gradient(hsl(var(--border) / 0.4) 1px, transparent 1px),
       linear-gradient(90deg, hsl(var(--border) / 0.4) 1px, transparent 1px);
-    background-size: 32px 32px;
+    background-size: clamp(24px, 2vw, 40px) clamp(24px, 2vw, 40px);
     background-position: -1px -1px;
   }
 
@@ -188,7 +220,7 @@
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .no-scrollbar { scrollbar-width: none; }
 
-  /* Elevate system (carry-over from template) */
+  /* Elevate system */
   .no-default-hover-elevate {}
   .no-default-active-elevate {}
 
