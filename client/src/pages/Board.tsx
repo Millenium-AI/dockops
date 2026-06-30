@@ -63,56 +63,59 @@ export default function Board() {
   ];
 
   return (
-    <AppShell title="Job Board">
-      <div className="flex flex-col h-full">
+    <AppShell noPadding fluid title="Job Board">
+      <div className="flex flex-col h-full overflow-hidden">
 
-        {/* Permit alert banner */}
-        {permitAlerts > 0 && !dismissAlert && (
-          <div className="mx-4 mt-3 mb-1 flex items-center gap-2 bg-amber-950 border border-amber-800 rounded-lg px-4 py-2.5 text-sm text-amber-300">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-            <span className="flex-1">
-              <span className="font-semibold">{permitAlerts} permit{permitAlerts > 1 ? "s" : ""}</span>
-              {" "}need{permitAlerts === 1 ? "s" : ""} attention — check the Permitting column.
-            </span>
-            <button
-              onClick={() => setDismissAlert(true)}
-              className="text-amber-400 hover:text-amber-200 transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
-        {/* Summary stat strip */}
-        <div className="mx-4 mb-3 bg-card border border-border rounded-lg px-4 py-2.5 flex">
-          {stats.map((s, i) => (
-            <div key={s.label} className={`flex-1 px-3 ${i < stats.length - 1 ? "border-r border-border" : ""}`}>
-              <div className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</div>
-              <div className="text-sm font-bold text-foreground num-display">{s.value}</div>
+        {/* Alerts + stat strip */}
+        <div className="px-[clamp(1rem,2vw,2rem)] pt-3 pb-0 shrink-0">
+          {/* Permit alert banner */}
+          {permitAlerts > 0 && !dismissAlert && (
+            <div className="mb-2 flex items-center gap-2 bg-amber-950 border border-amber-800 rounded-lg px-4 py-2.5 text-sm text-amber-300">
+              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="flex-1">
+                <span className="font-semibold">{permitAlerts} permit{permitAlerts > 1 ? "s" : ""}</span>
+                {" "}need{permitAlerts === 1 ? "s" : ""} attention — check the Permitting column.
+              </span>
+              <button
+                onClick={() => setDismissAlert(true)}
+                className="text-amber-400 hover:text-amber-200 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
-          ))}
+          )}
+
+          {/* Summary stat strip */}
+          <div className="w-full bg-card border border-border rounded-lg px-[clamp(0.75rem,1.5vw,1.5rem)] py-2.5 flex mb-3">
+            {stats.map((s, i) => (
+              <div key={s.label} className={`flex-1 px-3 ${i < stats.length - 1 ? "border-r border-border" : ""}`}>
+                <div className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</div>
+                <div className="text-sm font-bold text-foreground num-display">{s.value}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Kanban board */}
-        <div className="flex-1 overflow-x-auto">
-          <div className="flex gap-3 px-4 py-4 h-full" style={{ minWidth: `${JOB_STAGES.length * 240}px` }}>
+        <div className="flex-1 overflow-hidden px-[clamp(1rem,2vw,2rem)] pb-[clamp(0.75rem,1.5vw,1.5rem)]">
+          <div className="flex gap-[clamp(0.5rem,0.75vw,0.75rem)] w-full h-full">
             {JOB_STAGES.map(stage => {
               const jobs = byStage[stage.id];
               return (
                 <div
                   key={stage.id}
-                  className={`flex flex-col w-[clamp(200px,18vw,280px)] shrink-0 bg-muted/40 rounded-xl border-t-2 ${STAGE_ACCENT[stage.id]}`}
+                  className={`flex flex-col flex-1 min-w-0 bg-muted/40 rounded-xl border-t-2 ${STAGE_ACCENT[stage.id]}`}
                 >
                   {/* Column header */}
-                  <div className="flex items-center justify-between px-3 py-2.5">
-                    <span className="text-sm font-semibold">{stage.label}</span>
-                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${STAGE_COUNT_COLOR[stage.id]}`}>
+                  <div className="flex items-center justify-between px-3 py-2.5 shrink-0">
+                    <span className="text-sm font-semibold truncate">{stage.label}</span>
+                    <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0 ml-2 ${STAGE_COUNT_COLOR[stage.id]}`}>
                       {jobs.length}
                     </span>
                   </div>
 
                   {/* Cards */}
-                  <div className="flex flex-col gap-2 px-2 pb-3 overflow-y-auto flex-1 max-h-[calc(100vh-220px)]">
+                  <div className="flex flex-col gap-2 px-2 pb-3 overflow-y-auto flex-1">
                     {jobs.length === 0 && (
                       <div className="text-xs text-muted-foreground/50 text-center py-6">
                         No jobs

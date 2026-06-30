@@ -3,9 +3,9 @@ import { AppShell } from "@/components/AppShell";
 import { JobDrawer } from "@/components/JobDrawer";
 import { SCHEDULE_EVENTS, JOBS, NOW } from "@/data/seed";
 import type { ScheduleEvent } from "@/data/types";
-import { CalendarDays, List, LayoutGrid, AlertTriangle, Clock, Package, Anchor, Wrench, CheckCircle2, X } from "lucide-react";
+import { CalendarDays, List, LayoutGrid, AlertTriangle, Clock, Package, Anchor, Wrench, CheckCircle2, X, ChevronLeft, ChevronRight } from "lucide-react";
 
-// ── helpers ─────────────────────────────────────────────────────────
+// ── helpers ───────────────────────────────────────────────────────────────
 const CREWS = ["Unassigned", "Crew A", "Crew B", "Crew C", "Crew D"] as const;
 
 const EVENT_TYPE_LABEL: Record<ScheduleEvent["type"], string> = {
@@ -65,7 +65,6 @@ function isPast(iso: string) {
 function daysUntil(iso: string) {
   return Math.ceil((new Date(iso).getTime() - NOW.getTime()) / 86_400_000);
 }
-
 function getMonday(d: Date) {
   const date = new Date(d);
   const day = date.getDay();
@@ -139,11 +138,11 @@ function CalendarCell({ date, events, onDrop, onMove, onSelect }: CellProps) {
                     "border-border bg-background/40"}
       `}
     >
-      <div className={`text-[0.625rem] font-semibold px-0.5 ${
+      <div className={`text-xs font-semibold px-0.5 ${
         today ? "text-primary" : past ? "text-muted-foreground/50" : "text-muted-foreground"
       }`}>
         {new Date(date + "T12:00:00").getDate()}
-        {today && <span className="ml-1 text-[0.625rem] uppercase tracking-wider text-primary">Today</span>}
+        {today && <span className="ml-1 text-xs uppercase tracking-wider text-primary">Today</span>}
       </div>
       {events.map(ev => (
         <div key={ev.id} className={past ? "opacity-40" : ""}>
@@ -151,7 +150,7 @@ function CalendarCell({ date, events, onDrop, onMove, onSelect }: CellProps) {
         </div>
       ))}
       {over && (
-        <div className="text-[0.625rem] text-primary/60 text-center py-1 border border-dashed border-primary/30 rounded">
+        <div className="text-xs text-primary/60 text-center py-1 border border-dashed border-primary/30 rounded">
           Drop here
         </div>
       )}
@@ -182,7 +181,7 @@ function BoardCell({ date, events, onDrop, onMove, onSelect }: BoardCellProps) {
         if (id) onDrop(id, date);
       }}
       className={`
-        min-w-[140px] border-r border-border p-1.5 flex flex-col gap-1 transition-colors
+        min-h-[clamp(80px,9vh,130px)] border-r border-border p-1.5 flex flex-col gap-1 transition-colors
         ${over ? "bg-primary/5" : ""}
       `}
     >
@@ -190,7 +189,7 @@ function BoardCell({ date, events, onDrop, onMove, onSelect }: BoardCellProps) {
         <EventChip key={ev.id} event={ev} onMove={onMove} onSelect={onSelect} />
       ))}
       {over && (
-        <div className="text-[0.625rem] text-primary/60 text-center py-1 border border-dashed border-primary/30 rounded">
+        <div className="text-xs text-primary/60 text-center py-1 border border-dashed border-primary/30 rounded">
           Drop here
         </div>
       )}
@@ -198,7 +197,7 @@ function BoardCell({ date, events, onDrop, onMove, onSelect }: BoardCellProps) {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────
+// ── Main Page ──────────────────────────────────────────────────────────
 export default function Schedule() {
   const [view, setView] = useState<"board" | "calendar" | "list">("board");
   const [crewFilter, setCrewFilter] = useState<string>("all");
@@ -206,6 +205,7 @@ export default function Schedule() {
   const [events, setEvents] = useState<ScheduleEvent[]>(SCHEDULE_EVENTS);
   const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
   const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [weekOffset, setWeekOffset] = useState(0);
 
   // Job for drawer — resolved from the selected event
   const selectedJob = useMemo(
@@ -213,24 +213,25 @@ export default function Schedule() {
     [selectedEvent]
   );
 
-  // Board view: 7 days starting from today
+  // Board view: 7 days starting from today + weekOffset weeks
   const weekDays = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(NOW);
-      d.setDate(d.getDate() + i);
+      d.setDate(d.getDate() + i + weekOffset * 7);
       return d.toISOString().slice(0, 10);
     });
-  }, []);
+  }, [weekOffset]);
 
-  // Calendar view: 28 days (4 weeks) starting from Monday of current week
+  // Calendar view: 28 days (4 weeks) starting from Monday of current week + weekOffset
   const calDays = useMemo(() => {
     const monday = getMonday(NOW);
+    monday.setDate(monday.getDate() + weekOffset * 7);
     return Array.from({ length: 28 }, (_, i) => {
       const d = new Date(monday);
       d.setDate(d.getDate() + i);
       return d.toISOString().slice(0, 10);
     });
-  }, []);
+  }, [weekOffset]);
 
   const calMonthHeader = useMemo(() => {
     const start = new Date(calDays[0] + "T12:00:00");
@@ -276,10 +277,10 @@ export default function Schedule() {
 
   return (
     <AppShell title="Schedule">
-      <div className="px-5 py-4 space-y-4 max-w-[1600px] mx-auto">
+      <div className="space-y-3 w-full">
 
         {/* Today at a Glance strip */}
-        <div className="bg-card border border-border rounded-lg px-4 py-2.5 mb-3 flex items-center gap-3">
+        <div className="bg-card border border-border rounded-lg px-4 py-2.5 flex items-center gap-3 w-full">
           <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider w-12 shrink-0">Today</div>
           <div className="flex-1 overflow-x-auto flex gap-2 no-scrollbar">
             {todayEvents.length === 0 ? (
@@ -299,7 +300,7 @@ export default function Schedule() {
 
         {/* Permit alert strip */}
         {(overdue.length > 0 || dueSoon.length > 0) && (
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 w-full">
             {overdue.map(ev => (
               <div key={ev.id} className="flex items-center gap-2 bg-red-950 border border-red-800 rounded-lg px-4 py-2 text-sm text-red-300">
                 <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
@@ -329,7 +330,7 @@ export default function Schedule() {
         )}
 
         {/* Toolbar */}
-        <div className="flex items-center gap-3 flex-wrap">
+        <div className="flex items-center gap-3 flex-wrap w-full">
           {/* View toggle */}
           <div className="flex items-center gap-0.5 p-0.5 rounded-md border border-border bg-card">
             {(["board", "calendar", "list"] as const).map(v => (
@@ -346,6 +347,24 @@ export default function Schedule() {
               </button>
             ))}
           </div>
+
+          {/* Week nav (shown for calendar + board) */}
+          {(view === "calendar" || view === "board") && (
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setWeekOffset(o => o - 1)}
+                className="h-7 w-7 flex items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setWeekOffset(o => o + 1)}
+                className="h-7 w-7 flex items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
 
           {/* Crew filter */}
           <select
@@ -377,13 +396,13 @@ export default function Schedule() {
 
         {/* Board view */}
         {view === "board" && (
-          <div className="overflow-x-auto">
-            <div className="flex min-w-max">
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-full grid" style={{ gridTemplateColumns: "clamp(120px, 10vw, 160px) 1fr" }}>
               {/* Lane labels column */}
-              <div className="w-36 shrink-0 sticky left-0 z-10">
+              <div className="sticky left-0 z-10 bg-background">
                 <div className="h-10 border-b border-border bg-background" />
                 {CREWS.map(crew => (
-                  <div key={crew} className="bg-muted/30 border-r border-border border-b border-border px-3 py-2 text-xs font-medium text-muted-foreground">
+                  <div key={crew} className="bg-muted/30 border-r border-border border-b border-border px-3 py-2 text-xs font-medium text-muted-foreground min-h-[clamp(80px,9vh,130px)]">
                     {crew === "Unassigned"
                       ? <span className="italic text-muted-foreground/50">Unassigned</span>
                       : crew}
@@ -391,34 +410,36 @@ export default function Schedule() {
                 ))}
               </div>
               {/* Day columns */}
-              <div className="flex">
-                {weekDays.map(date => {
-                  const today = isToday(date);
-                  return (
-                    <div key={date} className="min-w-[140px] flex-shrink-0">
-                      <div className={`h-10 border-b border-border px-2 py-1 text-xs text-muted-foreground text-center ${today ? "text-primary font-semibold border-b-2 border-b-primary" : ""}`}>
-                        <div>{fmtWeekday(date)}</div>
-                        <div>{fmtDayNum(date)}</div>
+              <div className="overflow-x-auto">
+                <div className="grid grid-cols-7 min-w-full">
+                  {weekDays.map(date => {
+                    const today = isToday(date);
+                    return (
+                      <div key={date} className="min-w-0">
+                        <div className={`h-10 border-b border-border px-2 py-1 text-xs text-muted-foreground text-center ${today ? "text-primary font-semibold border-b-2 border-b-primary" : ""}`}>
+                          <div>{fmtWeekday(date)}</div>
+                          <div>{fmtDayNum(date)}</div>
+                        </div>
+                        {CREWS.map(crew => {
+                          const dayEvents = (byDay[date] ?? []).filter(ev =>
+                            crew === "Unassigned" ? !ev.crew || ev.crew === "" : ev.crew === crew
+                          );
+                          return (
+                            <div key={crew} className="border-b border-border">
+                              <BoardCell
+                                date={date}
+                                events={dayEvents}
+                                onDrop={handleDrop}
+                                onMove={handleDrop}
+                                onSelect={setSelectedEvent}
+                              />
+                            </div>
+                          );
+                        })}
                       </div>
-                      {CREWS.map(crew => {
-                        const dayEvents = (byDay[date] ?? []).filter(ev =>
-                          crew === "Unassigned" ? !ev.crew || ev.crew === "" : ev.crew === crew
-                        );
-                        return (
-                          <div key={crew} className="border-b border-border">
-                            <BoardCell
-                              date={date}
-                              events={dayEvents}
-                              onDrop={handleDrop}
-                              onMove={handleDrop}
-                              onSelect={setSelectedEvent}
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
@@ -426,36 +447,33 @@ export default function Schedule() {
 
         {/* Calendar view */}
         {view === "calendar" && (
-          <div>
+          <div className="w-full">
             {/* Month navigation header */}
             <div className="flex items-center justify-between mb-2">
               <div className="text-sm font-semibold text-foreground">{calMonthHeader}</div>
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => {
-                    const newNow = new Date(NOW);
-                    newNow.setDate(newNow.getDate() - 7);
-                    // Recalculate calDays via state shift - simpler: just shift displayed window
-                  }}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                  onClick={() => setWeekOffset(o => o - 1)}
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md border border-border bg-card"
                 >
-                  ←
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1"
+                  onClick={() => setWeekOffset(o => o + 1)}
+                  className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md border border-border bg-card"
                 >
-                  →
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
             {/* Day-of-week header */}
-            <div className="grid grid-cols-7 gap-2 mb-1">
+            <div className="grid grid-cols-7 gap-[clamp(0.25rem,0.5vw,0.5rem)] mb-1">
               {["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d => (
                 <div key={d} className="text-xs uppercase tracking-wider text-muted-foreground font-medium px-1">{d}</div>
               ))}
             </div>
             {/* Rows — pad first day to weekday */}
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-[clamp(0.25rem,0.5vw,0.5rem)]">
               {Array.from({ length: (new Date(calDays[0] + "T12:00:00").getDay() + 6) % 7 }).map((_, i) => (
                 <div key={`pad-${i}`} />
               ))}
@@ -478,7 +496,7 @@ export default function Schedule() {
 
         {/* List view */}
         {view === "list" && (
-          <div className="bg-card border border-border rounded-xl overflow-hidden">
+          <div className="bg-card border border-border rounded-xl overflow-hidden w-full">
             <ul className="divide-y divide-border">
               {filtered.length === 0 && (
                 <li className="py-10 text-center text-sm text-muted-foreground">No events match.</li>
@@ -540,7 +558,7 @@ export default function Schedule() {
                                     {EVENT_TYPE_LABEL[ev.type]}
                                   </span>
                                   {ev.crew && crewClass && (
-                                    <span className={`text-[0.625rem] px-1.5 py-0.5 rounded ${crewClass}`}>
+                                    <span className={`text-xs px-1.5 py-0.5 rounded ${crewClass}`}>
                                       {ev.crew}
                                     </span>
                                   )}

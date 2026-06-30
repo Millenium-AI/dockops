@@ -9,7 +9,7 @@ import {
   ExternalLink, PlusCircle, Users, Briefcase, TrendingUp, CheckCircle2, DollarSign,
 } from "lucide-react";
 
-// ── helpers ─────────────────────────────────────────────────────────
+// ── helpers ───────────────────────────────────────────────────────────────
 const HEALTH_COLOR: Record<string, string> = {
   on_track: "bg-green-500",
   watch:    "bg-amber-400",
@@ -56,7 +56,7 @@ function getTags(jobs: Job[]) {
   return tags;
 }
 
-// ── CustomerRow ──────────────────────────────────────────────────────
+// ── CustomerRow ──────────────────────────────────────────────────────────
 interface RowProps {
   customer: Customer;
   jobs: Job[];
@@ -83,7 +83,7 @@ function CustomerRow({ customer, jobs, onSelectJob }: RowProps) {
         onClick={() => setExpanded(e => !e)}
       >
         {/* Expand toggle */}
-        <td className="pl-4 pr-2 py-3 w-6">
+        <td className="pl-4 pr-2 py-3 w-8">
           {jobs.length > 0
             ? expanded
               ? <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
@@ -95,17 +95,17 @@ function CustomerRow({ customer, jobs, onSelectJob }: RowProps) {
         {/* Name + avatar */}
         <td className="py-3 pr-4">
           <div className="flex items-center gap-2">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${avatarClass(customer.name)}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${avatarClass(customer.name)}`}>
               {getInitials(customer.name)}
             </div>
-            <div>
-              <div className="text-sm font-semibold inline">{customer.name}</div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold inline truncate">{customer.name}</div>
               {customer.source && (
                 <span className="inline ml-2 bg-muted text-muted-foreground text-xs px-2 py-0.5 rounded">
                   {customer.source}
                 </span>
               )}
-              <div className="flex items-center gap-3 mt-0.5">
+              <div className="flex items-center gap-3 mt-0.5 flex-wrap">
                 <a href={`mailto:${customer.email}`} onClick={e => e.stopPropagation()}
                   className="text-xs text-muted-foreground hover:text-primary flex items-center gap-1 transition-colors">
                   <Mail className="w-3 h-3" />{customer.email}
@@ -121,19 +121,19 @@ function CustomerRow({ customer, jobs, onSelectJob }: RowProps) {
 
         {/* Location */}
         <td className="py-3 pr-4">
-          <div className="flex items-center gap-1 text-sm text-muted-foreground">
+          <div className="flex items-center gap-1 text-sm text-muted-foreground truncate">
             <MapPin className="w-3 h-3 shrink-0" />{customer.city}
           </div>
         </td>
 
         {/* Last Job */}
-        <td className="py-3 pr-4 text-sm text-muted-foreground/50">
+        <td className="py-3 pr-4 text-sm text-muted-foreground/50 whitespace-nowrap">
           {lastJobDate ? fmtMonthDay(lastJobDate) : "No jobs"}
         </td>
 
         {/* Tags */}
         <td className="py-3 pr-4">
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             {tags.map(t => (
               <span key={t.label} className={`text-xs px-2 py-0.5 rounded ${t.className}`}>
                 {t.label}
@@ -144,7 +144,7 @@ function CustomerRow({ customer, jobs, onSelectJob }: RowProps) {
 
         {/* Jobs summary */}
         <td className="py-3 pr-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             {openJobs.length > 0 && (
               <span className="text-xs font-semibold text-emerald-300 bg-emerald-950 border border-emerald-800 px-1.5 py-0.5 rounded">
                 {openJobs.length} open
@@ -162,12 +162,12 @@ function CustomerRow({ customer, jobs, onSelectJob }: RowProps) {
         </td>
 
         {/* Total value */}
-        <td className="py-3 pr-4 text-right">
+        <td className="py-3 pr-4 text-right whitespace-nowrap">
           <span className="text-sm font-semibold num-display">{dollars(totalValue)}</span>
         </td>
 
         {/* Quick Actions */}
-        <td className="py-3 pl-2 pr-4 text-right">
+        <td className="py-3 pl-2 pr-4 text-right w-[10%]">
           <div className="hidden group-hover:flex items-center justify-end gap-2">
             <a href={`mailto:${customer.email}`} onClick={e => e.stopPropagation()}
               className="text-muted-foreground hover:text-primary transition-colors"
@@ -246,7 +246,7 @@ function CustomerRow({ customer, jobs, onSelectJob }: RowProps) {
   );
 }
 
-// ── Main Page ─────────────────────────────────────────────────────────
+// ── Main Page ──────────────────────────────────────────────────────────
 export default function Customers() {
   const [query, setQuery]   = useState("");
   const [sourceFilter, setSourceFilter] = useState("All Sources");
@@ -331,12 +331,12 @@ export default function Customers() {
 
   return (
     <AppShell title="Customers">
-      <div className="px-5 py-4 space-y-4 max-w-[1500px] mx-auto">
+      <div className="space-y-4 w-full">
 
         {/* Stat strip */}
-        <div className="grid grid-cols-5 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full">
           {stats.map(s => (
-            <div key={s.label} className="bg-card border border-border rounded-lg px-4 py-3">
+            <div key={s.label} className="bg-card border border-border rounded-lg px-4 py-3 w-full">
               <div className="flex items-center justify-between">
                 <div className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</div>
                 <s.icon className={`w-4 h-4 text-muted-foreground ${s.color ?? ""}`} />
@@ -347,8 +347,8 @@ export default function Customers() {
         </div>
 
         {/* Search + filter + Add */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="relative flex-1 max-w-xs">
+        <div className="flex items-center gap-3 flex-wrap w-full">
+          <div className="relative flex-1 min-w-[160px] max-w-xs">
             <Search className="w-3.5 h-3.5 text-muted-foreground absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input
               value={query}
@@ -360,14 +360,14 @@ export default function Customers() {
           <select
             value={sourceFilter}
             onChange={e => setSourceFilter(e.target.value)}
-            className="h-8 px-2 text-sm rounded-md border border-border bg-card focus:outline-none focus:border-primary/60"
+            className="h-8 px-2 text-sm rounded-md border border-border bg-card focus:outline-none focus:border-primary/60 shrink-0"
           >
             {uniqueSources.map(s => <option key={s} value={s}>{s}</option>)}
           </select>
           <select
             value={sortBy}
             onChange={e => setSortBy(e.target.value)}
-            className="h-8 px-2 text-sm rounded-md border border-border bg-card focus:outline-none focus:border-primary/60"
+            className="h-8 px-2 text-sm rounded-md border border-border bg-card focus:outline-none focus:border-primary/60 shrink-0"
           >
             <option>Name A–Z</option>
             <option>Name Z–A</option>
@@ -376,7 +376,7 @@ export default function Customers() {
             <option>Most Recent</option>
           </select>
           <button
-            className="ml-auto inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-card text-sm text-muted-foreground hover:text-foreground transition-colors"
+            className="ml-auto shrink-0 inline-flex items-center gap-1.5 h-8 px-3 rounded-md border border-border bg-card text-sm text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => alert("New customer form — coming soon")}
           >
             <PlusCircle className="w-3.5 h-3.5" /> New Customer
@@ -384,11 +384,21 @@ export default function Customers() {
         </div>
 
         {/* Table */}
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="bg-card border border-border rounded-xl overflow-hidden w-full">
+          <table className="w-full text-sm table-fixed">
+            <colgroup>
+              <col className="w-8" />
+              <col className="w-[30%]" />
+              <col className="w-[10%]" />
+              <col className="w-[8%]" />
+              <col className="w-[12%]" />
+              <col className="w-[10%]" />
+              <col className="w-[8%]" />
+              <col className="w-[10%]" />
+            </colgroup>
             <thead className="border-b border-border">
               <tr className="text-left text-xs uppercase tracking-widest text-muted-foreground">
-                <th className="pl-4 pr-2 py-3 w-6" />
+                <th className="pl-4 pr-2 py-3 w-8" />
                 <th className="py-3 pr-4 font-medium">Customer</th>
                 <th className="py-3 pr-4 font-medium">Location</th>
                 <th className="py-3 pr-4 font-medium">Last Job</th>

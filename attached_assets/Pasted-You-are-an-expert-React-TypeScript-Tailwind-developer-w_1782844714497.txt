@@ -1,0 +1,291 @@
+You are an expert React/TypeScript/Tailwind developer working on DockOps — a dark-themed marine construction operations platform. Dark mode ONLY. No light-mode color classes anywhere.
+
+TECH STACK: React + TypeScript + Tailwind CSS + shadcn/ui + Lucide icons
+
+═══════════════════════════════════════════════════════════
+CORE OBJECTIVE
+═══════════════════════════════════════════════════════════
+
+Make the entire app fully adaptive to any screen size — from 13" laptop to 24"+ desktop to ultrawide.
+The layout must feel native and optimal on every device with zero manual scrolling where avoidable.
+The fix is architectural: standardize layout in AppShell and Sidebar first, then align all pages to it.
+
+═══════════════════════════════════════════════════════════
+DESIGN SYSTEM — TOKENS (use only these, no exceptions)
+═══════════════════════════════════════════════════════════
+
+Backgrounds:    bg-background, bg-card, bg-muted, bg-muted/40, bg-muted/20
+Borders:        border-border, border-primary/30, border-primary/40
+Text:           text-foreground, text-muted-foreground, text-primary
+Status classes: .status-track (teal), .status-watch (amber), .status-risk (red), .status-neutral (slate), .status-info (blue)
+
+Dark-safe badge colors (NEVER use the left side):
+  bg-red-100 text-red-700 border-red-200       → bg-red-950 text-red-300 border-red-800
+  bg-amber-100 text-amber-700 border-amber-200 → bg-amber-950 text-amber-300 border-amber-800
+  bg-green-100 text-green-700 border-green-200 → bg-emerald-950 text-emerald-300 border-emerald-800
+  bg-blue-100 text-blue-700 border-blue-200    → bg-blue-950 text-blue-300 border-blue-800
+  bg-violet-100 text-violet-700                → bg-violet-950 text-violet-300 border-violet-800
+  bg-slate-100 text-slate-600                  → bg-slate-800 text-slate-300
+  bg-gray-100 text-gray-600                    → bg-muted text-muted-foreground
+  bg-red-50 border-red-100 text-red-600        → bg-red-950/60 border-red-900 text-red-400
+  bg-amber-50 border-amber-200 text-amber-800  → bg-amber-950 border-amber-800 text-amber-300
+  bg-green-50 border-green-200 text-green-700  → bg-emerald-950 border-emerald-800 text-emerald-300
+
+Font sizes — NO hardcoded px values anywhere:
+  text-[13px]  → text-sm
+  text-[12px]  → text-sm or text-xs
+  text-[11px]  → text-xs
+  text-[10px]  → text-[0.625rem]
+  text-[10.5px]→ text-xs
+  text-[15px]  → text-base
+  text-[22px]  → text-2xl
+  text-[12.5px]→ text-sm
+
+Fluid sizing — use clamp() for anything that should scale with the viewport:
+  Sidebar full width:      clamp(180px, 14vw, 240px)
+  Sidebar collapsed width: clamp(44px, 3.5vw, 56px)
+  Page horizontal padding: clamp(1rem, 2vw, 2rem)
+  Kanban column width:     column width should be calculated so ALL 6 columns fit within
+                           the available width (100vw minus sidebar) with a small gap between them.
+                           Use: calc((100vw - var(--sidebar-w) - 5 * 0.75rem - 2 * clamp(1rem,2vw,2rem)) / 6)
+                           where --sidebar-w is the current sidebar width CSS variable
+
+═══════════════════════════════════════════════════════════
+FILES TO MODIFY — OUTPUT ALL IN FULL, NO TRUNCATION
+═══════════════════════════════════════════════════════════
+
+1. client/src/components/Sidebar.tsx
+2. client/src/components/AppShell.tsx
+3. client/src/pages/Board.tsx
+4. client/src/components/JobCard.tsx
+5. client/src/pages/Customers.tsx
+6. client/src/pages/Schedule.tsx
+
+DO NOT modify any other file.
+DO NOT add new npm packages.
+DO NOT create new files.
+DO NOT modify data types or seed data.
+Preserve all existing component APIs, props, and TypeScript types.
+All alert() stubs remain as-is.
+AppShell, JobDrawer, JobCard usage unchanged.
+
+═══════════════════════════════════════════════════════════
+TASK 1 — Sidebar.tsx (collapsible, fluid width)
+═══════════════════════════════════════════════════════════
+
+Convert the sidebar to a collapsible fluid sidebar:
+
+State: const [collapsed, setCollapsed] = useState(false)
+— Collapsed state should also auto-set to true when window.innerWidth < 1024 on mount (useEffect)
+— Listen to window resize and auto-collapse below 1024px, auto-expand above 1280px
+
+Collapsed = icons only. Expanded = icons + labels.
+
+Width:
+  Expanded:  width: clamp(180px, 14vw, 240px)  — set via inline style
+  Collapsed: width: clamp(44px, 3.5vw, 56px)   — set via inline style
+  Use CSS transition: transition: width 200ms ease
+
+Expose the current width as a CSS variable on the element:
+  style={{ width: expandedOrCollapsedWidth, '--sidebar-w': expandedOrCollapsedWidth }}
+  This lets the Board page calculate exact column widths.
+
+Toggle button:
+  — A small button at the bottom of the nav section (above the footer)
+  — Collapsed: shows ChevronRight icon
+  — Expanded: shows ChevronLeft icon
+  — Styled: w-full flex items-center justify-center h-8 text-muted-foreground/50 hover:text-muted-foreground transition-colors
+
+Brand section when collapsed:
+  — Hide the text (DockOps + Marine Ops), show only the Anchor icon centered
+
+Nav items when collapsed:
+  — Show icon only, centered, with a Tooltip (title attribute) showing the label
+  — px-0 justify-center
+
+Footer when collapsed:
+  — Show only the avatar circle, centered
+
+All font sizes: replace text-[15px] → text-base, text-[13px] → text-sm, text-[10px] → text-[0.625rem], text-[11px] → text-xs, text-[12px] → text-sm
+
+═══════════════════════════════════════════════════════════
+TASK 2 — AppShell.tsx (standardized adaptive layout)
+═══════════════════════════════════════════════════════════
+
+The AppShell is the master layout. All pages must look consistent through it.
+
+Current grid: gridTemplateColumns: "auto 1fr" — keep this structure.
+
+Changes:
+1. Pass a `noPadding` boolean prop (default false) to AppShell.
+   — When noPadding=true: <main> has no padding (used by Board for full-bleed kanban)
+   — When noPadding=false: <main> adds px-[clamp(1rem,2vw,2rem)] py-[clamp(0.75rem,1.5vw,1.5rem)]
+
+2. Pass an optional `fluid` boolean prop (default false).
+   — When fluid=true: <main> content stretches 100% width (no max-width)
+   — When fluid=false: <main> content has max-width: 100% (no artificial cap — remove any existing max-w constraints)
+
+3. Header height: change fixed h-[60px] → h-[clamp(48px,5vh,64px)]
+   Header title: text-[15px] → text-base
+   Header subtitle: text-[12px] → text-sm
+
+4. <main> must always be: overflow-y-auto scroll-contain bg-background w-full
+
+5. Remove any max-w-* from AppShell itself — pages control their own content width only if needed, and none of them should have a max-w cap.
+
+Export updated props interface:
+  children: ReactNode
+  title: string
+  subtitle?: string
+  actions?: ReactNode
+  noPadding?: boolean
+  fluid?: boolean
+
+═══════════════════════════════════════════════════════════
+TASK 3 — Board.tsx (full-screen adaptive kanban)
+═══════════════════════════════════════════════════════════
+
+The Board must fill the entire available screen without any horizontal scrollbar.
+All 6 columns must always fit within the visible area — they shrink proportionally on smaller screens.
+
+Use AppShell with noPadding={true} fluid={true}
+
+Layout structure:
+  <AppShell noPadding fluid title="Job Board">
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* alerts + stat strip — px-[clamp(1rem,2vw,2rem)] pt-3 pb-0 */}
+      {/* kanban — flex-1 overflow-hidden px-[clamp(1rem,2vw,2rem)] pb-[clamp(0.75rem,1.5vw,1.5rem)] */}
+    </div>
+  </AppShell>
+
+Kanban column width calculation:
+  Each column width = calc((100% - 5 * clamp(0.5rem, 0.75vw, 0.75rem)) / 6)
+  The outer kanban row is: display flex, gap-[clamp(0.5rem,0.75vw,0.75rem)], w-full h-full
+  Each column: flex flex-col, flex-shrink-1, flex-grow-1, flex-basis-0, min-w-0
+  This makes all 6 columns share available space equally and shrink together.
+
+Column cards area:
+  flex-1 overflow-y-auto — columns scroll internally if cards overflow
+  max-h: none — let the column fill whatever height is available
+
+Stat strip:
+  — Full width: w-full bg-card border border-border rounded-lg px-[clamp(0.75rem,1.5vw,1.5rem)] py-2.5 flex mb-3
+  — 4 stats with border-r border-border dividers
+  — Label: text-xs text-muted-foreground uppercase tracking-wider
+  — Value: text-sm font-bold num-display
+
+Fix ALL colors per the dark-safe replacement table above.
+Fix ALL font sizes per the table above.
+Keep dismiss button on permit alert.
+
+═══════════════════════════════════════════════════════════
+TASK 4 — JobCard.tsx
+═══════════════════════════════════════════════════════════
+
+Fix all light-mode color classes → dark-safe per the table above.
+Fix all hardcoded px font sizes → Tailwind scale.
+
+Cards must adapt to their container width — no fixed widths on the card itself.
+The card is already w-full by default as a block element; ensure nothing constrains it.
+
+PermitBadge:
+  overdue:  bg-red-950 text-red-300 border-red-800
+  due_soon: bg-amber-950 text-amber-300 border-amber-800
+  ok/green: bg-emerald-950 text-emerald-300 border-emerald-800
+  ok/blue:  bg-blue-950 text-blue-300 border-blue-800
+
+Blocking issue: bg-red-950/60 border-red-900 text-red-400
+Health dots: keep as-is (bg-green-500, bg-amber-400, bg-red-500)
+
+═══════════════════════════════════════════════════════════
+TASK 5 — Customers.tsx (full-width adaptive table)
+═══════════════════════════════════════════════════════════
+
+Use AppShell with no extra props (noPadding=false, fluid=false — defaults).
+AppShell now handles the padding. REMOVE the px-5 py-4 wrapper div and the max-w-[1500px] mx-auto.
+The content div becomes: <div className="space-y-4 w-full">
+
+Stat strip:
+  — grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 w-full
+  — Each card: bg-card border border-border rounded-lg px-4 py-3 w-full
+  — Label: text-xs uppercase tracking-wider text-muted-foreground
+  — Value: text-2xl font-bold num-display
+
+Search/filter bar:
+  — flex items-center gap-3 flex-wrap w-full
+  — Search input: flex-1 min-w-[160px] max-w-xs
+  — Dropdowns: shrink-0
+  — New Customer button: ml-auto shrink-0
+
+Table container:
+  — bg-card border border-border rounded-xl overflow-hidden w-full
+  — table: w-full table-fixed (use table-fixed so columns don't cause overflow)
+  — Column widths via <colgroup>:
+      toggle:   w-8
+      customer: w-[30%]
+      location: w-[10%]
+      last job: w-[8%]
+      tags:     w-[12%]
+      jobs:     w-[10%]
+      value:    w-[8%]
+      actions:  w-[10%]
+
+Keep all existing logic, row expand, quick actions, tags, avatars, empty state exactly as-is.
+Fix any remaining px font sizes or light-mode colors.
+
+═══════════════════════════════════════════════════════════
+TASK 6 — Schedule.tsx (full-width adaptive schedule)
+═══════════════════════════════════════════════════════════
+
+Use AppShell with no extra props.
+AppShell handles padding. REMOVE max-w-[1600px] mx-auto and the px-5 py-4 wrapper.
+Content div: <div className="space-y-3 w-full">
+
+Today strip, toolbar, view containers: all w-full.
+
+Board view (crew swim lanes):
+  — Outer: w-full overflow-x-auto
+  — Inner grid: min-w-full, use CSS grid: gridTemplateColumns: "clamp(120px,10vw,160px) 1fr"
+  — Day columns inside the right section: grid with 7 equal columns (grid-cols-7)
+  — Each cell: min-h-[clamp(80px,9vh,130px)] p-1.5
+  — Chips: same dark-safe colors as defined in prior prompt section 4B
+
+Calendar view:
+  — w-full grid grid-cols-7 gap-[clamp(0.25rem,0.5vw,0.5rem)]
+  — Cell: min-h-[clamp(90px,10vh,140px)]
+  — Navigation arrows for prev/next week
+  — Today ring: ring-1 ring-primary bg-primary/5
+
+List view:
+  — w-full bg-card border border-border rounded-xl overflow-hidden
+  — Sticky date section headers
+  — Crew-colored badges
+  — Countdown color coding (≤2d red, 3–7d amber, >7d muted)
+
+Today strip: always visible, w-full, horizontal scroll chips.
+
+Permit alert strip:
+  — Dark-safe colors
+  — Dismiss button per alert
+  — Date shown prominently
+
+Fix ALL px font sizes → Tailwind scale.
+Fix ALL light-mode colors → dark-safe.
+
+═══════════════════════════════════════════════════════════
+FINAL CHECKLIST — VERIFY BEFORE OUTPUT
+═══════════════════════════════════════════════════════════
+
+[ ] Sidebar collapses to icons only below 1024px, auto-expands above 1280px
+[ ] Sidebar width is a CSS variable --sidebar-w read by the board
+[ ] Board fills the full screen — all 6 columns visible, no horizontal scrollbar, columns use flex-grow
+[ ] Customers and Schedule fill 100% of available width — no max-w caps
+[ ] AppShell padding is handled once in AppShell — no page-level px/py wrappers duplicating it
+[ ] Zero instances of: bg-red-50, bg-amber-50, bg-green-50, bg-blue-50, bg-slate-100, bg-gray-100, bg-violet-100, bg-green-100
+[ ] Zero instances of: text-red-700, text-amber-700, text-green-700, text-blue-700, text-gray-600, text-slate-600
+[ ] Zero instances of: text-[Npx] or any hardcoded pixel font size
+[ ] Zero instances of: max-w-[...] on any page-level wrapper div
+[ ] All 6 files output in full — absolutely no "// ... rest unchanged" truncation
+[ ] No new npm packages, no new files, no type changes
+[ ] All alert() stubs preserved
+[ ] CUSTOMERS, JOBS, SCHEDULE_EVENTS, NOW only read, never mutated

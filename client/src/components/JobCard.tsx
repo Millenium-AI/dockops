@@ -61,7 +61,7 @@ export function JobCard({ job, onClick }: Props) {
   return (
     <div
       onClick={() => onClick(job)}
-      className="bg-card border border-border rounded-lg p-3 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all group"
+      className="bg-card border border-border rounded-lg p-3 cursor-pointer hover:shadow-md hover:border-primary/30 transition-all group w-full"
     >
       {/* Header row */}
       <div className="flex items-start justify-between gap-2 mb-1.5">
@@ -77,12 +77,12 @@ export function JobCard({ job, onClick }: Props) {
       </div>
 
       {/* Customer name */}
-      <div className="text-sm font-semibold leading-snug mb-0.5 group-hover:text-primary transition-colors">
+      <div className="text-sm font-semibold leading-snug mb-0.5 group-hover:text-primary transition-colors truncate">
         {job.customerName}
       </div>
 
       {/* City + dock type */}
-      <div className="text-xs text-muted-foreground mb-2">
+      <div className="text-xs text-muted-foreground mb-2 truncate">
         {job.city} &middot; {DOCK_TYPE_LABEL[job.dockType]}
       </div>
 
