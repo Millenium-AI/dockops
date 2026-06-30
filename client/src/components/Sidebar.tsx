@@ -1,26 +1,21 @@
 import { Link, useLocation } from "wouter";
 import {
-  LayoutDashboard, Users, HardHat, FileCheck2, CalendarRange,
-  FolderKanban, DollarSign, Anchor, Wrench,
+  LayoutDashboard, Users, CalendarRange, Anchor,
 } from "lucide-react";
 
 const NAV = [
-  { href: "/",              label: "Dashboard",   icon: LayoutDashboard },
-  { href: "/sales",         label: "Sales",       icon: Users },
-  { href: "/projects",      label: "Projects",    icon: HardHat },
-  { href: "/permits",       label: "Permits",     icon: FileCheck2 },
-  { href: "/schedule",      label: "Schedule",    icon: CalendarRange },
-  { href: "/customers",     label: "Customers",   icon: FolderKanban },
-  { href: "/finance",       label: "Finance",     icon: DollarSign },
+  { href: "/",          label: "Board",     icon: LayoutDashboard },
+  { href: "/schedule",  label: "Schedule",  icon: CalendarRange },
+  { href: "/customers", label: "Customers", icon: Users },
 ];
 
 export function Sidebar() {
   const [loc] = useLocation();
   return (
-    <aside className="grid grid-rows-[auto_1fr_auto] bg-sidebar border-r border-sidebar-border w-[230px] h-full">
+    <aside className="grid grid-rows-[auto_1fr_auto] bg-sidebar border-r border-sidebar-border w-[220px] h-full">
       {/* Brand */}
       <div className="px-5 pt-5 pb-4 border-b border-sidebar-border">
-        <Link href="/" className="flex items-center gap-2.5 group" data-testid="link-home">
+        <Link href="/" className="flex items-center gap-2.5 group">
           <div className="grid place-items-center w-8 h-8 rounded-md bg-primary/10 border border-primary/20">
             <Anchor className="w-4 h-4 text-primary" strokeWidth={2.4} />
           </div>
@@ -34,25 +29,19 @@ export function Sidebar() {
       </div>
 
       {/* Nav */}
-      <nav className="overflow-y-auto scroll-contain px-3 py-3">
-        <div className="px-2 pb-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70">
-          Workspace
-        </div>
+      <nav className="overflow-y-auto px-3 py-3">
         <ul className="space-y-0.5">
           {NAV.map(({ href, label, icon: Icon }) => {
-            const active =
-              href === "/" ? loc === "/" : loc.startsWith(href);
+            const active = href === "/" ? loc === "/" : loc.startsWith(href);
             return (
               <li key={href}>
                 <Link
                   href={href}
-                  data-testid={`nav-${label.toLowerCase()}`}
                   className={`
-                    flex items-center gap-2.5 px-3 h-9 rounded-md text-[13px]
-                    transition-colors hover-elevate
+                    flex items-center gap-2.5 px-3 h-9 rounded-md text-[13px] transition-colors
                     ${active
                       ? "bg-sidebar-accent text-sidebar-foreground border border-sidebar-border"
-                      : "text-sidebar-foreground/75"}
+                      : "text-sidebar-foreground/75 hover:bg-sidebar-accent/50"}
                   `}
                 >
                   <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} strokeWidth={1.8} />
@@ -61,24 +50,6 @@ export function Sidebar() {
               </li>
             );
           })}
-        </ul>
-
-        <div className="px-2 pt-6 pb-2 text-[10px] uppercase tracking-[0.16em] text-muted-foreground/70">
-          Resources
-        </div>
-        <ul className="space-y-0.5">
-          <li>
-            <div
-              className="flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] text-sidebar-foreground/55 cursor-default"
-              title="Visible inside the Schedule page"
-            >
-              <Wrench className="w-4 h-4 shrink-0" strokeWidth={1.8} />
-              <span className="font-medium leading-tight">Crews &amp; Equipment</span>
-            </div>
-            <div className="px-3 pb-1 -mt-1 text-[10px] text-muted-foreground/55 tracking-wide">
-              Inside Schedule
-            </div>
-          </li>
         </ul>
       </nav>
 
