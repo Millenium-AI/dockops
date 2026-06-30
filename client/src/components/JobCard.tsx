@@ -19,7 +19,7 @@ const HEALTH_COLOR: Record<string, string> = {
   at_risk:  "bg-red-500",
 };
 
-// Permit urgency badge
+// Permit urgency badge — semantic utility classes
 function PermitBadge({ job }: { job: Job }) {
   if (!job.permitRequired || job.stage !== "permitting") return null;
   const urgency = jobPermitUrgency(job);
@@ -27,7 +27,7 @@ function PermitBadge({ job }: { job: Job }) {
 
   if (urgency === "overdue") {
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.625rem] font-semibold bg-red-950 text-red-300 border border-red-800">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold badge-permit-overdue border">
         <AlertTriangle className="w-3 h-3" />
         {label} — Overdue
       </span>
@@ -35,7 +35,7 @@ function PermitBadge({ job }: { job: Job }) {
   }
   if (urgency === "due_soon") {
     return (
-      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.625rem] font-semibold bg-amber-950 text-amber-300 border border-amber-800">
+      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold badge-permit-due border">
         <Clock className="w-3 h-3" />
         {label} — Due Soon
       </span>
@@ -45,8 +45,8 @@ function PermitBadge({ job }: { job: Job }) {
   const colorClass = PERMIT_STATUS_COLOR[job.permitStatus];
   const isGreen = colorClass === "green";
   return (
-    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[0.625rem] font-semibold
-      ${isGreen ? "bg-emerald-950 text-emerald-300 border border-emerald-800" : "bg-blue-950 text-blue-300 border border-blue-800"}`}>
+    <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-semibold border
+      ${isGreen ? "badge-permit-ok" : "badge-permit-blue"}`}>
       {isGreen && <CheckCircle2 className="w-3 h-3" />}
       {label}
     </span>
@@ -91,13 +91,13 @@ export function JobCard({ job, onClick }: Props) {
 
       {/* Blocking issue */}
       {job.blockingIssue && (
-        <div className="mt-2 text-xs text-red-400 bg-red-950/60 border border-red-900 rounded px-2 py-1 leading-snug">
+        <div className="mt-2 text-xs badge-blocking border rounded px-2 py-1 leading-snug">
           ⚠ {job.blockingIssue}
         </div>
       )}
 
       {/* Days in stage */}
-      <div className="mt-2 text-[0.625rem] text-muted-foreground/60">
+      <div className="mt-2 text-xs text-muted-foreground/60">
         {job.daysInStage}d in stage
         {job.assignedCrew && ` · ${job.assignedCrew}`}
       </div>

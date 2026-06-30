@@ -1,0 +1,67 @@
+Critical Issues to Fix
+1. Hardcoded Tailwind color classes break your token system
+
+Your index.css defines a clean semantic token system (--primary, --destructive, status colors) , but across JobCard.tsx, Board.tsx, and Schedule.tsx you're using raw Tailwind colors like bg-red-950, bg-amber-950, bg-blue-950, text-emerald-300, bg-violet-400 . This bypasses your design tokens, meaning if you ever tweak the palette, nothing updates automatically.
+
+Fix: Extract those badge/chip patterns into your status-* utility classes or add semantic variants to index.css:
+
+css
+.badge-permit-overdue { @apply bg-red-950 text-red-300 border border-red-800; }
+.badge-permit-due     { @apply bg-amber-950 text-amber-300 border border-amber-800; }
+2. The select dropdowns in Schedule are unstyled
+
+The crew and type filter <select> elements use a thin border border-border bg-card but don't handle the browser's native arrow, font mismatch, or hover state . On dark mode the native select arrow is nearly invisible.
+
+Fix: Replace with a custom <Select> from shadcn/ui (you already have components.json set up with shadcn) :
+
+tsx
+import { Select, SelectTrigger, SelectContent, SelectItem } from "@/components/ui/select";
+3. Dashboard.tsx, Finance.tsx, Permits.tsx, Projects.tsx, Sales.tsx are all stubs
+
+These pages are only 129–186 bytes , meaning the nav links are dead. This creates a broken UX for any real user. The Sidebar also only links to Board, Schedule, and Customers — but the full nav isn't defined .
+
+Fix priority order: Build out Projects → Finance → Permits, since those three have real data models already in your seed/types.
+
+Layout & Structure Improvements
+4. AppShell header loses context on dense pages
+
+The header uses text-base font-semibold for the title and an optional subtitle, which is fine . But when noPadding is true (Board), you manually re-apply padding inside the child — this creates two sources of truth for horizontal padding (clamp(1rem,2vw,2rem) appears in both AppShell and Board.tsx) .
+
+Fix: Add a headerSlot prop to AppShell so the stat strip and alert banner live inside the shell header region rather than overlapping with noPadding main content.
+
+5. The stat strip on the Board has no visual hierarchy separation from the kanban
+
+The summary stats row (Total Jobs / Active / Pipeline Value / Closed Revenue) uses text-xs uppercase labels and text-sm font-bold values . For an ops dashboard this is where your eye lands first — it should have slightly more vertical breathing room and the numbers should use the num-display class you defined (which is currently unused on the stat strip) .
+
+Fix:
+
+tsx
+<div className="text-lg font-bold num-display">{s.value}</div>
+Sidebar Optimization
+6. Missing active indicator visual weight
+
+The active nav item uses bg-muted text-foreground border border-border , which is very subtle — nearly indistinguishable from hover state at a glance. The active icon gets text-primary but the item background doesn't use primary at all.
+
+Fix:
+
+tsx
+// Active state
+"bg-primary/10 text-foreground border border-primary/20"
+// Icon
+<Icon className={`w-4 h-4 shrink-0 ${active ? "text-primary" : ""}`} />
+7. No tooltip in collapsed state for non-nav items
+
+You use title={collapsed ? label : undefined} on nav links , which gives browser native tooltips. This works but is inconsistent with the rest of the UI. Since you have shadcn set up, a <Tooltip> component would match the design system.
+
+Schedule Page Specifics
+8. Board view has a z-index/scroll isolation issue
+
+The board crew-lane column is sticky left-0 z-10 bg-background but the day columns scroll inside a nested overflow-x-auto . On some viewports the sticky column won't stick properly because the scroll container isn't its direct parent. The pattern should be:
+
+tsx
+<div className="overflow-x-auto relative">
+  <div className="flex" style={{ minWidth: "max-content" }}>
+    <div className="sticky left-0 z-20 bg-background ...">
+9. Week navigation is duplicated
+
+There are two sets of ChevronLeft / ChevronRight week nav buttons — one in the toolbar and one inline in the calendar month header . They both call setWeekOffset but visually appear in two places, confusing users. Consolidate into the toolbar only.

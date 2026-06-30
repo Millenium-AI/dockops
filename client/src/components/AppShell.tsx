@@ -6,6 +6,7 @@ export function AppShell({
   title,
   subtitle,
   actions,
+  headerSlot,
   noPadding = false,
   fluid = false,
 }: {
@@ -13,15 +14,16 @@ export function AppShell({
   title: string;
   subtitle?: string;
   actions?: ReactNode;
+  headerSlot?: ReactNode;
   noPadding?: boolean;
   fluid?: boolean;
 }) {
   return (
     <div
       className="grid h-dvh w-full"
-      style={{ gridTemplateColumns: "auto 1fr", gridTemplateRows: "auto 1fr" }}
+      style={{ gridTemplateColumns: "auto 1fr", gridTemplateRows: "auto auto 1fr" }}
     >
-      <div className="row-span-2">
+      <div className="row-span-3">
         <Sidebar />
       </div>
 
@@ -34,6 +36,12 @@ export function AppShell({
         </div>
         <div className="flex items-center gap-2">{actions}</div>
       </header>
+
+      {headerSlot && (
+        <div className="bg-background border-b border-border px-[clamp(1rem,2vw,2rem)] py-2.5 shrink-0">
+          {headerSlot}
+        </div>
+      )}
 
       <main
         className={`

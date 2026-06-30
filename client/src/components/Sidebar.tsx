@@ -3,6 +3,9 @@ import { Link, useLocation } from "wouter";
 import {
   LayoutDashboard, Users, CalendarRange, Anchor, ChevronLeft, ChevronRight,
 } from "lucide-react";
+import {
+  Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
+} from "@/components/ui/tooltip";
 
 const NAV = [
   { href: "/",          label: "Board",     icon: LayoutDashboard },
@@ -30,83 +33,96 @@ export function Sidebar() {
     : "clamp(180px, 14vw, 240px)";
 
   return (
-    <aside
-      className="grid grid-rows-[auto_1fr_auto] bg-card border-r border-border h-full shrink-0"
-      style={{
-        width,
-        transition: "width 200ms ease",
-        "--sidebar-w": width,
-      } as React.CSSProperties}
-    >
-      {/* Brand */}
-      <div className="px-4 pt-4 pb-3 border-b border-border">
-        <Link href="/" className={`flex items-center gap-2.5 group ${collapsed ? "justify-center px-0" : ""}`}>
-          <div className="grid place-items-center w-8 h-8 rounded-md bg-primary/10 border border-primary/20 shrink-0">
-            <Anchor className="w-4 h-4 text-primary" strokeWidth={2.4} />
-          </div>
-          {!collapsed && (
-            <div>
-              <div className="text-base font-semibold tracking-tight leading-tight">DockOps</div>
-              <div className="text-[0.625rem] uppercase tracking-[0.16em] text-muted-foreground/80 leading-tight">
-                Marine Ops
+    <TooltipProvider delayDuration={200}>
+      <aside
+        className="grid grid-rows-[auto_1fr_auto] bg-card border-r border-border h-full shrink-0"
+        style={{
+          width,
+          transition: "width 200ms ease",
+          "--sidebar-w": width,
+        } as React.CSSProperties}
+      >
+        {/* Brand */}
+        <div className="px-4 pt-4 pb-3 border-b border-border">
+          <Link href="/" className={`flex items-center gap-2.5 group ${collapsed ? "justify-center px-0" : ""}`}>
+            <div className="grid place-items-center w-8 h-8 rounded-md bg-primary/10 border border-primary/20 shrink-0">
+              <Anchor className="w-4 h-4 text-primary" strokeWidth={2.4} />
+            </div>
+            {!collapsed && (
+              <div>
+                <div className="text-base font-semibold tracking-tight leading-tight">DockOps</div>
+                <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground/80 leading-tight">
+                  Marine Ops
+                </div>
               </div>
-            </div>
-          )}
-        </Link>
-      </div>
-
-      {/* Nav */}
-      <nav className="overflow-y-auto px-2 py-3">
-        <ul className="space-y-0.5">
-          {NAV.map(({ href, label, icon: Icon }) => {
-            const active = href === "/" ? loc === "/" : loc.startsWith(href);
-            return (
-              <li key={href}>
-                <Link
-                  href={href}
-                  title={collapsed ? label : undefined}
-                  className={`
-                    flex items-center rounded-md text-sm transition-colors h-9
-                    ${collapsed ? "px-0 justify-center" : "gap-2.5 px-3"}
-                    ${active
-                      ? "bg-muted text-foreground border border-border"
-                      : "text-muted-foreground hover:bg-muted/50"}
-                  `}
-                >
-                  <Icon className={`w-4 h-4 shrink-0 ${active ? "text-primary" : ""}`} strokeWidth={1.8} />
-                  {!collapsed && <span className="font-medium">{label}</span>}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-
-        {/* Collapse toggle */}
-        <div className="mt-4 px-1">
-          <button
-            onClick={() => setCollapsed(c => !c)}
-            className="w-full flex items-center justify-center h-8 text-muted-foreground/50 hover:text-muted-foreground transition-colors rounded-md"
-            title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          >
-            {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-          </button>
+            )}
+          </Link>
         </div>
-      </nav>
 
-      {/* Footer */}
-      <div className="border-t border-border px-3 py-3">
-        <div className={`flex items-center gap-2.5 ${collapsed ? "justify-center" : ""}`}>
-          <div className="w-8 h-8 rounded-full bg-primary/15 border border-primary/25 grid place-items-center text-primary text-xs font-semibold shrink-0">
-            NW
+        {/* Nav */}
+        <nav className="overflow-y-auto px-2 py-3">
+          <ul className="space-y-0.5">
+            {NAV.map(({ href, label, icon: Icon }) => {
+              const active = href === "/" ? loc === "/" : loc.startsWith(href);
+              return (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className={`
+                      flex items-center rounded-md text-sm transition-colors h-9
+                      ${collapsed ? "px-0 justify-center" : "gap-2.5 px-3"}
+                      ${active
+                        ? "bg-primary/10 text-foreground border border-primary/20"
+                        : "text-muted-foreground hover:bg-muted/50"}
+                    `}
+                  >
+                    {collapsed ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="grid place-items-center">
+                            <Icon className={`w-4 h-4 shrink-0 ${active ? "text-primary" : ""}`} strokeWidth={1.8} />
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          {label}
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <Icon className={`w-4 h-4 shrink-0 ${active ? "text-primary" : ""}`} strokeWidth={1.8} />
+                    )}
+                    {!collapsed && <span className="font-medium">{label}</span>}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+
+          {/* Collapse toggle */}
+          <div className="mt-4 px-1">
+            <button
+              onClick={() => setCollapsed(c => !c)}
+              className="w-full flex items-center justify-center h-8 text-muted-foreground/50 hover:text-muted-foreground transition-colors rounded-md"
+            >
+              {collapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
+            </button>
           </div>
-          {!collapsed && (
-            <div className="leading-tight overflow-hidden">
-              <div className="text-sm font-medium truncate">Nick — Owner</div>
-              <div className="text-xs text-muted-foreground">Tampa Bay Marine</div>
+        </nav>
+
+        {/* Footer */}
+        <div className="border-t border-border px-3 py-3">
+          <div className={`flex items-center gap-2.5 ${collapsed ? "justify-center" : ""}`}>
+            <div className="w-8 h-8 rounded-full bg-primary/15 border border-primary/25 grid place-items-center text-primary text-xs font-semibold shrink-0">
+              NW
             </div>
-          )}
+            {!collapsed && (
+              <div className="leading-tight overflow-hidden">
+                <div className="text-sm font-medium truncate">Nick — Owner</div>
+                <div className="text-xs text-muted-foreground">Tampa Bay Marine</div>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </aside>
+      </aside>
+    </TooltipProvider>
   );
 }

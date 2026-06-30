@@ -3,18 +3,23 @@ import { AppShell } from "@/components/AppShell";
 import { JobDrawer } from "@/components/JobDrawer";
 import { SCHEDULE_EVENTS, JOBS, NOW } from "@/data/seed";
 import type { ScheduleEvent } from "@/data/types";
-import { CalendarDays, List, LayoutGrid, AlertTriangle, Clock, Package, Anchor, Wrench, CheckCircle2, X, ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  CalendarDays, List, LayoutGrid, AlertTriangle, Clock, Package, Anchor, Wrench, CheckCircle2, X, ChevronLeft, ChevronRight
+} from "lucide-react";
+import {
+  Select, SelectTrigger, SelectValue, SelectContent, SelectItem,
+} from "@/components/ui/select";
 
 // ── helpers ───────────────────────────────────────────────────────────────
 const CREWS = ["Unassigned", "Crew A", "Crew B", "Crew C", "Crew D"] as const;
 
 const EVENT_TYPE_LABEL: Record<ScheduleEvent["type"], string> = {
-  site_visit:       "Site Visit",
-  permit_deadline:  "Permit Deadline",
-  material_delivery:"Delivery",
-  install_start:    "Install Start",
-  install_finish:   "Install Finish",
-  inspection:       "Inspection",
+  site_visit:        "Site Visit",
+  permit_deadline:   "Permit Deadline",
+  material_delivery: "Delivery",
+  install_start:     "Install Start",
+  install_finish:    "Install Finish",
+  inspection:        "Inspection",
 };
 
 const EVENT_TYPE_ICON: Record<ScheduleEvent["type"], React.ReactNode> = {
@@ -27,20 +32,20 @@ const EVENT_TYPE_ICON: Record<ScheduleEvent["type"], React.ReactNode> = {
 };
 
 const EVENT_CHIP_STYLE: Record<ScheduleEvent["type"], string> = {
-  site_visit:        "bg-slate-800 border-l-2 border-slate-400 text-slate-200",
-  permit_deadline:   "bg-red-950 border-l-2 border-red-500 text-red-300",
-  material_delivery: "bg-blue-950 border-l-2 border-blue-400 text-blue-200",
-  install_start:     "bg-emerald-950 border-l-2 border-emerald-500 text-emerald-200",
-  install_finish:    "bg-emerald-900 border-l-2 border-emerald-400 text-emerald-300",
-  inspection:        "bg-amber-950 border-l-2 border-amber-400 text-amber-200",
+  site_visit:        "badge-site-visit border-l-2",
+  permit_deadline:   "badge-permit-deadline border-l-2",
+  material_delivery: "badge-delivery border-l-2",
+  install_start:     "badge-install-start border-l-2",
+  install_finish:    "badge-install-finish border-l-2",
+  inspection:        "badge-inspection border-l-2",
 };
 
 const CREW_BADGE_STYLE: Record<string, string> = {
-  "Crew A": "bg-teal-900 text-teal-300",
-  "Crew B": "bg-blue-900 text-blue-300",
-  "Crew C": "bg-amber-900 text-amber-300",
-  "Crew D": "bg-slate-700 text-slate-300",
-  "Nick":   "bg-violet-900 text-violet-300",
+  "Crew A": "badge-crew-a",
+  "Crew B": "badge-crew-b",
+  "Crew C": "badge-crew-c",
+  "Crew D": "badge-crew-d",
+  "Nick":   "badge-crew-nick",
 };
 
 function fmtShort(iso: string) {
@@ -302,7 +307,7 @@ export default function Schedule() {
         {(overdue.length > 0 || dueSoon.length > 0) && (
           <div className="space-y-1.5 w-full">
             {overdue.map(ev => (
-              <div key={ev.id} className="flex items-center gap-2 bg-red-950 border border-red-800 rounded-lg px-4 py-2 text-sm text-red-300">
+              <div key={ev.id} className="flex items-center gap-2 alert-overdue border rounded-lg px-4 py-2 text-sm">
                 <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
                 <span className="flex-1"><span className="font-semibold">OVERDUE · {fmtShort(ev.date)}</span> — {ev.title}</span>
                 {ev.note && <span className="text-red-400/80 ml-1">{ev.note}</span>}
@@ -315,7 +320,7 @@ export default function Schedule() {
               </div>
             ))}
             {dueSoon.map(ev => (
-              <div key={ev.id} className="flex items-center gap-2 bg-amber-950 border border-amber-800 rounded-lg px-4 py-2 text-sm text-amber-200">
+              <div key={ev.id} className="flex items-center gap-2 alert-due border rounded-lg px-4 py-2 text-sm">
                 <Clock className="w-4 h-4 text-amber-400 shrink-0" />
                 <span className="flex-1"><span className="font-semibold">Due {fmtShort(ev.date)} · in {daysUntil(ev.date)} days</span> — {ev.title}</span>
                 <button
@@ -366,28 +371,30 @@ export default function Schedule() {
             </div>
           )}
 
-          {/* Crew filter */}
-          <select
-            value={crewFilter}
-            onChange={e => setCrewFilter(e.target.value)}
-            className="h-8 px-2 text-sm rounded-md border border-border bg-card focus:outline-none focus:border-primary/60"
-          >
-            <option value="all">All Crews</option>
-            {CREWS.slice(1).map(c => <option key={c} value={c}>{c}</option>)}
-            <option value="Nick">Nick</option>
-          </select>
+          {/* Crew filter — shadcn Select */}
+          <Select value={crewFilter} onValueChange={setCrewFilter}>
+            <SelectTrigger className="h-8 w-[140px] text-sm bg-card border-border">
+              <SelectValue placeholder="All Crews" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Crews</SelectItem>
+              {CREWS.slice(1).map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+              <SelectItem value="Nick">Nick</SelectItem>
+            </SelectContent>
+          </Select>
 
-          {/* Type filter */}
-          <select
-            value={typeFilter}
-            onChange={e => setTypeFilter(e.target.value)}
-            className="h-8 px-2 text-sm rounded-md border border-border bg-card focus:outline-none focus:border-primary/60"
-          >
-            <option value="all">All Types</option>
-            {Object.entries(EVENT_TYPE_LABEL).map(([k, v]) => (
-              <option key={k} value={k}>{v}</option>
-            ))}
-          </select>
+          {/* Type filter — shadcn Select */}
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="h-8 w-[160px] text-sm bg-card border-border">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              {Object.entries(EVENT_TYPE_LABEL).map(([k, v]) => (
+                <SelectItem key={k} value={k}>{v}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
 
           <span className="ml-auto text-sm text-muted-foreground">
             {filtered.length} event{filtered.length !== 1 ? "s" : ""}
@@ -396,13 +403,13 @@ export default function Schedule() {
 
         {/* Board view */}
         {view === "board" && (
-          <div className="w-full overflow-x-auto">
-            <div className="min-w-full grid" style={{ gridTemplateColumns: "clamp(120px, 10vw, 160px) 1fr" }}>
-              {/* Lane labels column */}
-              <div className="sticky left-0 z-10 bg-background">
+          <div className="w-full overflow-x-auto relative">
+            <div className="flex" style={{ minWidth: "max-content" }}>
+              {/* Lane labels column — sticky left */}
+              <div className="sticky left-0 z-20 bg-background shrink-0" style={{ width: "clamp(120px, 10vw, 160px)" }}>
                 <div className="h-10 border-b border-border bg-background" />
                 {CREWS.map(crew => (
-                  <div key={crew} className="bg-muted/30 border-r border-border border-b border-border px-3 py-2 text-xs font-medium text-muted-foreground min-h-[clamp(80px,9vh,130px)]">
+                  <div key={crew} className="bg-muted/30 border-r border-border border-b border-border px-3 py-2 text-xs font-medium text-muted-foreground" style={{ minHeight: "clamp(80px, 9vh, 130px)" }}>
                     {crew === "Unassigned"
                       ? <span className="italic text-muted-foreground/50">Unassigned</span>
                       : crew}
@@ -410,7 +417,7 @@ export default function Schedule() {
                 ))}
               </div>
               {/* Day columns */}
-              <div className="overflow-x-auto">
+              <div className="flex-1 min-w-0">
                 <div className="grid grid-cols-7 min-w-full">
                   {weekDays.map(date => {
                     const today = isToday(date);
@@ -448,22 +455,11 @@ export default function Schedule() {
         {/* Calendar view */}
         {view === "calendar" && (
           <div className="w-full">
-            {/* Month navigation header */}
+            {/* Month header — no week nav buttons, only the label */}
             <div className="flex items-center justify-between mb-2">
               <div className="text-sm font-semibold text-foreground">{calMonthHeader}</div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setWeekOffset(o => o - 1)}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md border border-border bg-card"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setWeekOffset(o => o + 1)}
-                  className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md border border-border bg-card"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
+              <div className="text-xs text-muted-foreground">
+                Week {weekOffset === 0 ? "current" : weekOffset > 0 ? `+${weekOffset}` : weekOffset}
               </div>
             </div>
             {/* Day-of-week header */}
@@ -489,7 +485,7 @@ export default function Schedule() {
               ))}
             </div>
             <p className="text-xs text-muted-foreground/50 mt-2">
-              Drag events to reschedule &middot; Changes are local to this session only
+              Drag events to reschedule · Changes are local to this session only
             </p>
           </div>
         )}
@@ -521,7 +517,7 @@ export default function Schedule() {
                   return (
                     <li key={date}>
                       <div className="bg-muted/30 px-4 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider sticky top-0 z-10">
-                        {fmtDay(new Date(date + "T12:00:00"))} &middot; {sortedEvents.length} event{sortedEvents.length !== 1 ? "s" : ""}
+                        {fmtDay(new Date(date + "T12:00:00"))} · {sortedEvents.length} event{sortedEvents.length !== 1 ? "s" : ""}
                       </div>
                       <ul className="divide-y divide-border">
                         {sortedEvents.map(ev => {
@@ -536,38 +532,22 @@ export default function Schedule() {
                             <li
                               key={ev.id}
                               onClick={() => setSelectedEvent(ev)}
-                              className={`flex items-start gap-4 px-4 py-3 cursor-pointer hover:bg-muted/30 transition-colors
-                                ${past ? "opacity-50" : ""}`}
+                              className="px-4 py-2.5 flex items-center gap-3 cursor-pointer hover:bg-muted/30 transition-colors"
                             >
-                              <div className="w-20 shrink-0">
-                                <div className="text-sm font-semibold">{fmtShort(ev.date)}</div>
-                                {isToday(ev.date) && <div className="text-xs text-primary font-medium">Today</div>}
-                                {!isToday(ev.date) && (
-                                  <div className={`text-xs ${countdownClass}`}>
-                                    {du < 0
-                                      ? `${Math.abs(du)}d ago`
-                                      : `in ${du}d`}
-                                  </div>
-                                )}
+                              <div className={`shrink-0 px-2 py-1 rounded text-xs font-medium border ${style}`}>
+                                {EVENT_TYPE_LABEL[ev.type]}
                               </div>
-                              <div className="w-1 self-stretch rounded-full shrink-0 bg-primary/40" />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-0.5">
-                                  <span className={`inline-flex items-center gap-1 text-xs font-semibold ${style}`}>
-                                    {EVENT_TYPE_ICON[ev.type]}
-                                    {EVENT_TYPE_LABEL[ev.type]}
-                                  </span>
-                                  {ev.crew && crewClass && (
-                                    <span className={`text-xs px-1.5 py-0.5 rounded ${crewClass}`}>
-                                      {ev.crew}
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="text-sm font-medium leading-snug">{ev.title}</div>
-                                {ev.note && (
-                                  <div className="text-xs text-muted-foreground mt-0.5 leading-snug">{ev.note}</div>
-                                )}
+                              <div className={`text-sm font-medium flex-1 truncate ${past ? "text-muted-foreground/50" : "text-foreground"}`}>
+                                {ev.title}
                               </div>
+                              {crewClass && (
+                                <span className={`text-xs px-1.5 py-0.5 rounded font-medium shrink-0 ${crewClass}`}>
+                                  {ev.crew}
+                                </span>
+                              )}
+                              <span className={`text-xs tabular-nums shrink-0 ${countdownClass}`}>
+                                {du === 0 ? "Today" : du > 0 ? `in ${du}d` : `${Math.abs(du)}d ago`}
+                              </span>
                             </li>
                           );
                         })}
@@ -580,8 +560,10 @@ export default function Schedule() {
         )}
       </div>
 
-      {/* Clicking an event tied to a job opens the job drawer */}
-      <JobDrawer job={selectedJob} onClose={() => setSelectedEvent(null)} />
+      <JobDrawer
+        job={selectedJob}
+        onClose={() => setSelectedEvent(null)}
+      />
     </AppShell>
   );
 }

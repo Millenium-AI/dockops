@@ -17,12 +17,12 @@ const STAGE_ACCENT: Record<JobStage, string> = {
 };
 
 const STAGE_COUNT_COLOR: Record<JobStage, string> = {
-  lead:        "bg-slate-800 text-slate-300",
-  estimating:  "bg-blue-950 text-blue-300",
-  contracted:  "bg-violet-950 text-violet-300",
-  permitting:  "bg-amber-950 text-amber-300",
-  in_progress: "bg-emerald-950 text-emerald-300",
-  closed:      "bg-muted text-muted-foreground",
+  lead:        "stage-count-lead",
+  estimating:  "stage-count-estimating",
+  contracted:  "stage-count-contracted",
+  permitting:  "stage-count-permitting",
+  in_progress: "stage-count-progress",
+  closed:      "stage-count-closed",
 };
 
 export default function Board() {
@@ -62,39 +62,40 @@ export default function Board() {
     { label: "Closed Revenue", value: `$${(closedRevenue / 1000).toFixed(0)}k` },
   ];
 
-  return (
-    <AppShell noPadding fluid title="Job Board">
-      <div className="flex flex-col h-full overflow-hidden">
-
-        {/* Alerts + stat strip */}
-        <div className="px-[clamp(1rem,2vw,2rem)] pt-3 pb-0 shrink-0">
-          {/* Permit alert banner */}
-          {permitAlerts > 0 && !dismissAlert && (
-            <div className="mb-2 flex items-center gap-2 bg-amber-950 border border-amber-800 rounded-lg px-4 py-2.5 text-sm text-amber-300">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
-              <span className="flex-1">
-                <span className="font-semibold">{permitAlerts} permit{permitAlerts > 1 ? "s" : ""}</span>
-                {" "}need{permitAlerts === 1 ? "s" : ""} attention — check the Permitting column.
-              </span>
-              <button
-                onClick={() => setDismissAlert(true)}
-                className="text-amber-400 hover:text-amber-200 transition-colors"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
-          {/* Summary stat strip */}
-          <div className="w-full bg-card border border-border rounded-lg px-[clamp(0.75rem,1.5vw,1.5rem)] py-2.5 flex mb-3">
-            {stats.map((s, i) => (
-              <div key={s.label} className={`flex-1 px-3 ${i < stats.length - 1 ? "border-r border-border" : ""}`}>
-                <div className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</div>
-                <div className="text-sm font-bold text-foreground num-display">{s.value}</div>
-              </div>
-            ))}
-          </div>
+  const headerSlot = (
+    <div className="space-y-2">
+      {/* Permit alert banner */}
+      {permitAlerts > 0 && !dismissAlert && (
+        <div className="flex items-center gap-2 alert-due border rounded-lg px-4 py-2.5 text-sm">
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          <span className="flex-1">
+            <span className="font-semibold">{permitAlerts} permit{permitAlerts > 1 ? "s" : ""}</span>
+            {" "}need{permitAlerts === 1 ? "s" : ""} attention — check the Permitting column.
+          </span>
+          <button
+            onClick={() => setDismissAlert(true)}
+            className="text-amber-400 hover:text-amber-200 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
+      )}
+
+      {/* Summary stat strip */}
+      <div className="w-full bg-card border border-border rounded-lg px-[clamp(0.75rem,1.5vw,1.5rem)] py-3 flex">
+        {stats.map((s, i) => (
+          <div key={s.label} className={`flex-1 px-3 ${i < stats.length - 1 ? "border-r border-border" : ""}`}>
+            <div className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</div>
+            <div className="text-lg font-bold text-foreground num-display">{s.value}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <AppShell noPadding fluid title="Job Board" headerSlot={headerSlot}>
+      <div className="flex flex-col h-full overflow-hidden">
 
         {/* Kanban board */}
         <div className="flex-1 overflow-hidden px-[clamp(1rem,2vw,2rem)] pb-[clamp(0.75rem,1.5vw,1.5rem)]">

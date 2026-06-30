@@ -192,6 +192,32 @@
   .status-neutral { color: hsl(215 14% 70%); background-color: hsl(215 25% 16% / 0.7); border-color: hsl(215 22% 22%); }
   .status-info    { color: hsl(210 80% 70%); background-color: hsl(210 80% 60% / 0.1); border-color: hsl(210 80% 60% / 0.25); }
 
+  /* Permit badge utilities — semantic, token-driven */
+  .badge-permit-overdue   { background-color: hsl(0 80% 15%);  color: hsl(0 80% 75%);  border-color: hsl(0 80% 30%); }
+  .badge-permit-due       { background-color: hsl(38 92% 12%); color: hsl(38 92% 65%);  border-color: hsl(38 92% 28%); }
+  .badge-permit-ok        { background-color: hsl(155 65% 12%); color: hsl(155 65% 70%); border-color: hsl(155 65% 28%); }
+  .badge-permit-blue      { background-color: hsl(215 60% 15%); color: hsl(210 80% 72%); border-color: hsl(215 60% 30%); }
+  .badge-blocking         { background-color: hsl(0 80% 15% / 0.6); color: hsl(0 80% 72%); border-color: hsl(0 80% 25%); }
+  .badge-crew-a           { background-color: hsl(174 58% 12%); color: hsl(174 58% 62%); }
+  .badge-crew-b           { background-color: hsl(215 60% 15%); color: hsl(210 80% 72%); }
+  .badge-crew-c           { background-color: hsl(38 92% 12%); color: hsl(38 92% 65%); }
+  .badge-crew-d           { background-color: hsl(215 22% 20%); color: hsl(215 14% 72%); }
+  .badge-crew-nick        { background-color: hsl(260 50% 15%); color: hsl(260 60% 72%); }
+  .badge-site-visit       { background-color: hsl(215 22% 20%); color: hsl(215 14% 82%); border-left-color: hsl(215 14% 55%); }
+  .badge-permit-deadline  { background-color: hsl(0 80% 15%); color: hsl(0 80% 72%); border-left-color: hsl(0 72% 55%); }
+  .badge-delivery         { background-color: hsl(215 60% 15%); color: hsl(210 80% 78%); border-left-color: hsl(210 80% 55%); }
+  .badge-install-start    { background-color: hsl(155 65% 12%); color: hsl(155 65% 72%); border-left-color: hsl(155 65% 48%); }
+  .badge-install-finish   { background-color: hsl(155 55% 14%); color: hsl(155 55% 68%); border-left-color: hsl(155 55% 45%); }
+  .badge-inspection       { background-color: hsl(38 92% 12%); color: hsl(38 92% 68%); border-left-color: hsl(38 92% 50%); }
+  .stage-count-lead       { background-color: hsl(215 22% 20%); color: hsl(215 14% 72%); }
+  .stage-count-estimating { background-color: hsl(215 60% 15%); color: hsl(210 80% 72%); }
+  .stage-count-contracted { background-color: hsl(260 50% 15%); color: hsl(260 60% 72%); }
+  .stage-count-permitting { background-color: hsl(38 92% 12%); color: hsl(38 92% 65%); }
+  .stage-count-progress   { background-color: hsl(155 65% 12%); color: hsl(155 65% 70%); }
+  .stage-count-closed     { background-color: hsl(var(--muted)); color: hsl(var(--muted-foreground)); }
+  .alert-overdue          { background-color: hsl(0 80% 15%); color: hsl(0 80% 75%); border-color: hsl(0 80% 30%); }
+  .alert-due              { background-color: hsl(38 92% 12%); color: hsl(38 92% 65%); border-color: hsl(38 92% 28%); }
+
   /* Subtle panel separator */
   .panel-divider {
     background-image: linear-gradient(to right, transparent, hsl(var(--border)), transparent);
