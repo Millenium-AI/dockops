@@ -30,7 +30,7 @@ export default function Login() {
         return;
       }
 
-      navigate("/");
+      window.location.href = "/";
     } catch (err) {
       setError("Network error. Please try again.");
     } finally {

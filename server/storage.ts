@@ -66,7 +66,19 @@ async function initializeTables() {
   }
 }
 
+// Ensure admin user is properly flagged
+async function ensureAdminUser() {
+  try {
+    await sql`
+      UPDATE users SET is_admin = true WHERE email = 'satrianomarine@gmail.com'
+    `;
+  } catch (err: any) {
+    console.error("⚠️  Error setting admin:", err.message);
+  }
+}
+
 initializeTables();
+ensureAdminUser();
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
