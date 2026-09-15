@@ -8,6 +8,17 @@ export const JOB_STATUSES: { id: JobStatus; label: string; color: string }[] = [
   { id: "completed",    label: "Completed",    color: "gray" },
 ];
 
+// Area (geographic regions)
+export type Area = "NW" | "NE" | "SE" | "SW" | "MARK";
+
+export const AREAS: { id: Area; label: string; color: string }[] = [
+  { id: "NW",   label: "North at Park",        color: "sky" },
+  { id: "NE",   label: "Sandy to Crisp",       color: "blue" },
+  { id: "SE",   label: "Crisp to Haseline",    color: "emerald" },
+  { id: "SW",   label: "Haseline to T.V.",     color: "amber" },
+  { id: "MARK", label: "Gulfport/Hamm",        color: "fuchsia" },
+];
+
 // Job Type (configurable in settings)
 export interface JobType {
   id: string;
@@ -32,8 +43,10 @@ export interface Job {
   scheduledDate: string | null;        // ISO date
   estimatedCompletionDate: string | null; // ISO date
 
-  // Crew
+  // Crew & Barge
   assignedCrew: string;
+  assignedBarge: string | null;        // Barge assignment (RANDY, BARGE #2, JOSH, etc.)
+  area: Area | null;                   // Geographic area
 
   // Notes
   notes: string;

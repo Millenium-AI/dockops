@@ -9,7 +9,7 @@ const day = (offset: number): string => {
 };
 
 export const JOBS: Job[] = [
-  // Pending jobs
+  // Waiting for permits (no barge assigned)
   {
     id: "job-001",
     jobNumber: "JB-001",
@@ -23,6 +23,8 @@ export const JOBS: Job[] = [
     scheduledDate: null,
     estimatedCompletionDate: null,
     assignedCrew: "Crew A",
+    assignedBarge: null,
+    area: "SW",
     notes: "Waiting on customer approval",
     createdAt: day(-5),
     updatedAt: day(-2),
@@ -40,12 +42,14 @@ export const JOBS: Job[] = [
     scheduledDate: null,
     estimatedCompletionDate: null,
     assignedCrew: null,
+    assignedBarge: null,
+    area: "NE",
     notes: "Dock assessment completed, awaiting approval",
     createdAt: day(-3),
     updatedAt: day(-1),
   },
 
-  // Scheduled jobs
+  // Barge assignments - RANDY
   {
     id: "job-003",
     jobNumber: "JB-003",
@@ -59,10 +63,14 @@ export const JOBS: Job[] = [
     scheduledDate: day(3),
     estimatedCompletionDate: day(13),
     assignedCrew: "Crew A",
+    assignedBarge: "RANDY",
+    area: "SE",
     notes: "Materials on order",
     createdAt: day(-10),
     updatedAt: day(-1),
   },
+
+  // Barge assignments - BARGE #2
   {
     id: "job-004",
     jobNumber: "JB-004",
@@ -76,10 +84,14 @@ export const JOBS: Job[] = [
     scheduledDate: day(7),
     estimatedCompletionDate: day(28),
     assignedCrew: "Crew B",
+    assignedBarge: "BARGE #2",
+    area: "NW",
     notes: "Permits approved, crew ready",
     createdAt: day(-30),
     updatedAt: day(-1),
   },
+
+  // Barge assignments - JOSH
   {
     id: "job-005",
     jobNumber: "JB-005",
@@ -93,12 +105,14 @@ export const JOBS: Job[] = [
     scheduledDate: day(10),
     estimatedCompletionDate: day(28),
     assignedCrew: "Crew B",
+    assignedBarge: "JOSH",
+    area: "SW",
     notes: "Deposit received",
     createdAt: day(-15),
     updatedAt: day(-2),
   },
 
-  // In progress jobs
+  // In progress - RANDY
   {
     id: "job-006",
     jobNumber: "JB-006",
@@ -112,10 +126,14 @@ export const JOBS: Job[] = [
     scheduledDate: day(-8),
     estimatedCompletionDate: day(4),
     assignedCrew: "Crew A",
+    assignedBarge: "RANDY",
+    area: "NE",
     notes: "Decking phase, 60% complete",
     createdAt: day(-50),
     updatedAt: day(0),
   },
+
+  // In progress - BARGE #2
   {
     id: "job-007",
     jobNumber: "JB-007",
@@ -129,10 +147,14 @@ export const JOBS: Job[] = [
     scheduledDate: day(-12),
     estimatedCompletionDate: day(23),
     assignedCrew: "Crew A",
+    assignedBarge: "BARGE #2",
+    area: "MARK",
     notes: "Framing phase, limestone challenges",
     createdAt: day(-60),
     updatedAt: day(0),
   },
+
+  // In progress - JOSH
   {
     id: "job-008",
     jobNumber: "JB-008",
@@ -146,6 +168,8 @@ export const JOBS: Job[] = [
     scheduledDate: day(-5),
     estimatedCompletionDate: day(3),
     assignedCrew: "Crew B",
+    assignedBarge: "JOSH",
+    area: "SW",
     notes: "Installation ongoing, good progress",
     createdAt: day(-40),
     updatedAt: day(0),
@@ -165,6 +189,8 @@ export const JOBS: Job[] = [
     scheduledDate: day(-30),
     estimatedCompletionDate: day(-25),
     assignedCrew: "Crew C",
+    assignedBarge: "RANDY",
+    area: "SE",
     notes: "Final invoice sent",
     createdAt: day(-45),
     updatedAt: day(-25),
