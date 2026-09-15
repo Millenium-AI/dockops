@@ -6,11 +6,12 @@ import { JOBS } from "@/data/seed";
 import { AREAS as AREA_CONFIG, type Job } from "@/data/types";
 
 const AREA_COLOR: Record<string, string> = {
-  NW:   "border-l-sky-500 bg-sky-50/20 dark:bg-sky-950/20",
-  NE:   "border-l-blue-500 bg-blue-50/20 dark:bg-blue-950/20",
-  SE:   "border-l-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20",
-  SW:   "border-l-amber-500 bg-amber-50/20 dark:bg-amber-950/20",
-  MARK: "border-l-fuchsia-500 bg-fuchsia-50/20 dark:bg-fuchsia-950/20",
+  NW:      "border-l-blue-500 bg-blue-50/20 dark:bg-blue-950/20",
+  Beaches: "border-l-slate-500 bg-slate-50/20 dark:bg-slate-950/20",
+  TI:      "border-l-orange-500 bg-orange-50/20 dark:bg-orange-950/20",
+  NE:      "border-l-pink-500 bg-pink-50/20 dark:bg-pink-950/20",
+  SE:      "border-l-purple-500 bg-purple-50/20 dark:bg-purple-950/20",
+  MAXI:    "border-l-green-500 bg-green-50/20 dark:bg-green-950/20",
 };
 
 export default function Board() {
@@ -62,16 +63,22 @@ export default function Board() {
           {/* Barge columns */}
           {bargeList.map(barge => {
             const jobs = byBarge[barge];
+            const leadGuy = jobs[0]?.leadGuy || null;
             return (
               <div
                 key={barge}
                 className="flex flex-col flex-1 min-w-0 bg-muted/40 rounded-xl border-t-2 border-t-blue-500"
               >
-                <div className="flex items-center justify-between px-4 py-3.5 shrink-0">
-                  <span className="text-sm font-semibold truncate">{barge}</span>
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ml-2 bg-blue-500/20 text-blue-700 dark:text-blue-300">
-                    {jobs.length}
-                  </span>
+                <div className="px-4 py-3.5 shrink-0 border-b border-border/50">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold truncate">{barge}</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ml-2 bg-blue-500/20 text-blue-700 dark:text-blue-300">
+                      {jobs.length}
+                    </span>
+                  </div>
+                  {leadGuy && (
+                    <div className="text-xs text-muted-foreground">Lead: <span className="font-semibold text-foreground">{leadGuy}</span></div>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-3 px-3 pb-4 overflow-y-auto flex-1">

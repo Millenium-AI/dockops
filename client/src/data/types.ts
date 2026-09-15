@@ -9,14 +9,15 @@ export const JOB_STATUSES: { id: JobStatus; label: string; color: string }[] = [
 ];
 
 // Area (geographic regions)
-export type Area = "NW" | "NE" | "SE" | "SW" | "MARK";
+export type Area = "NW" | "Beaches" | "TI" | "NE" | "SE" | "MAXI";
 
 export const AREAS: { id: Area; label: string; color: string }[] = [
-  { id: "NW",   label: "North at Park",        color: "sky" },
-  { id: "NE",   label: "Sandy to Crisp",       color: "blue" },
-  { id: "SE",   label: "Crisp to Haseline",    color: "emerald" },
-  { id: "SW",   label: "Haseline to T.V.",     color: "amber" },
-  { id: "MARK", label: "Gulfport/Hamm",        color: "fuchsia" },
+  { id: "NW",      label: "NW",       color: "blue" },
+  { id: "Beaches", label: "Beaches",  color: "slate" },
+  { id: "TI",      label: "TI",       color: "orange" },
+  { id: "NE",      label: "NE",       color: "pink" },
+  { id: "SE",      label: "SE",       color: "purple" },
+  { id: "MAXI",    label: "MAXI",     color: "green" },
 ];
 
 // Job Type (configurable in settings)
@@ -45,8 +46,9 @@ export interface Job {
 
   // Crew & Barge
   assignedCrew: string;
-  assignedBarge: string | null;        // Barge assignment (RANDY, BARGE #2, JOSH, etc.)
+  assignedBarge: string | null;        // Barge assignment (Barge 1, Barge 2, etc.)
   area: Area | null;                   // Geographic area
+  leadGuy: string | null;              // Lead person on barge
 
   // Notes
   notes: string;
