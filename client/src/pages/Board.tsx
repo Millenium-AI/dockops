@@ -16,12 +16,13 @@ const AREA_COLOR: Record<string, string> = {
 
 export default function Board() {
   const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [jobs, setJobs] = useState<Job[]>(JOBS);
 
   const { byBarge, waiting } = useMemo(() => {
     const barges: Record<string, Job[]> = {};
     const unassigned: Job[] = [];
 
-    JOBS.forEach(job => {
+    jobs.forEach(job => {
       if (!job.assignedBarge) {
         unassigned.push(job);
       } else {
@@ -33,7 +34,24 @@ export default function Board() {
     });
 
     return { byBarge: barges, waiting: unassigned };
-  }, []);
+  }, [jobs]);
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const handleDrop = (e: React.DragEvent, targetBarge: string) => {
+    e.preventDefault();
+    const jobId = e.dataTransfer.getData("jobId");
+    const job = jobs.find(j => j.id === jobId);
+    if (!job || job.assignedBarge === targetBarge) return;
+
+    setJobs(jobs.map(j =>
+      j.id === jobId ? { ...j, assignedBarge: targetBarge } : j
+    ));
+    // TODO: API call to persist
+  };
 
   const bargeList = Object.keys(byBarge).sort();
   const totalOwed = JOBS.reduce((sum, j) => sum + j.amountOwed, 0);
@@ -67,7 +85,9 @@ export default function Board() {
             return (
               <div
                 key={barge}
-                className="flex flex-col flex-1 min-w-0 bg-muted/40 rounded-xl border-t-2 border-t-blue-500"
+                onDragOver={handleDragOver}
+                onDrop={(e) => handleDrop(e, barge)}
+                className="flex flex-col flex-1 min-w-0 bg-muted/40 rounded-xl border-t-2 border-t-blue-500 hover:bg-muted/60 transition-colors"
               >
                 <div className="px-4 py-3.5 shrink-0 border-b border-border/50">
                   <div className="flex items-center justify-between mb-2">
@@ -88,7 +108,12 @@ export default function Board() {
                   {jobs.map(job => (
                     <div
                       key={job.id}
-                      className={`p-3 rounded-lg border-l-4 cursor-pointer hover:shadow-md transition-shadow ${AREA_COLOR[job.area || ""]}`}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.effectAllowed = "move";
+                        e.dataTransfer.setData("jobId", job.id);
+                      }}
+                      className={`p-3 rounded-lg border-l-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${AREA_COLOR[job.area || ""]}`}
                       onClick={() => setSelectedJob(job)}
                     >
                       <div className="font-medium text-sm">{job.customerName}</div>
@@ -113,7 +138,11 @@ export default function Board() {
 
       {/* Waiting for Permits */}
       {waiting.length > 0 && (
-        <div className="border-t border-border bg-amber-50/50 dark:bg-amber-950/30 px-[clamp(1.5rem,3vw,2.5rem)] py-6">
+        <div
+          className="border-t border-border bg-amber-50/50 dark:bg-amber-950/30 px-[clamp(1.5rem,3vw,2.5rem)] py-6 hover:bg-amber-50/70 dark:hover:bg-amber-950/40 transition-colors"
+          onDragOver={handleDragOver}
+          onDrop={(e) => handleDrop(e, "")}
+        >
           <div className="mb-4">
             <h2 className="text-lg font-semibold mb-2">Waiting for Permits</h2>
             <p className="text-sm text-muted-foreground">{waiting.length} jobs pending assignment</p>
@@ -122,7 +151,12 @@ export default function Board() {
             {waiting.map(job => (
               <div
                 key={job.id}
-                className={`p-3 rounded-lg border-l-4 cursor-pointer hover:shadow-md transition-shadow ${AREA_COLOR[job.area || ""]}`}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("jobId", job.id);
+                }}
+                className={`p-3 rounded-lg border-l-4 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow ${AREA_COLOR[job.area || ""]}`}
                 onClick={() => setSelectedJob(job)}
               >
                 <div className="font-medium text-sm">{job.customerName}</div>
