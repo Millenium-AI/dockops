@@ -91,7 +91,7 @@ DATABASE_URL=postgresql://...
 JWT_SECRET=your-secret-key (change from default)
 QB_CLIENT_ID=your-qb-client-id
 QB_CLIENT_SECRET=your-qb-client-secret
-QB_REDIRECT_URI=https://board.satrianomarine.com/api/quickbooks/callback
+QB_REDIRECT_URL=https://board.satrianomarine.com/api/quickbooks/callback
 NODE_ENV=production
 ```
 
@@ -127,7 +127,7 @@ See `TEST_SCENARIOS.md` for comprehensive test cases.
 [ ] Backup production database (Supabase > Backups)
 [ ] Verify DATABASE_URL is set correctly
 [ ] Verify QB_CLIENT_ID and QB_CLIENT_SECRET are set
-[ ] Verify QB_REDIRECT_URI = https://board.satrianomarine.com/api/quickbooks/callback
+[ ] Verify QB_REDIRECT_URL = https://board.satrianomarine.com/api/quickbooks/callback
 [ ] Verify JWT_SECRET is set (not default)
 ```
 

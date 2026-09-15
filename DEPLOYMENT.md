@@ -11,7 +11,7 @@ DATABASE_URL=postgresql://user:pass@host/database
 JWT_SECRET=your-random-secret-key
 QB_CLIENT_ID=your-qb-client-id
 QB_CLIENT_SECRET=your-qb-client-secret
-QB_REDIRECT_URI=https://board.satrianomarine.com/api/quickbooks/callback
+QB_REDIRECT_URL=https://board.satrianomarine.com/api/quickbooks/callback
 NODE_ENV=production
 ```
 

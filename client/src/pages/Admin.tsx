@@ -88,14 +88,27 @@ export default function Admin() {
 
   const handleConnectQB = async () => {
     setQBConnecting(true);
+    setError("");
     try {
       const res = await fetch("/api/quickbooks/auth");
       const data = await res.json();
-      if (data.authUrl) {
-        window.location.href = data.authUrl;
+
+      if (!res.ok) {
+        setError(data.message || `Failed to get QB auth URL (${res.status})`);
+        setQBConnecting(false);
+        return;
       }
+
+      if (!data.authUrl) {
+        setError("No auth URL received from server");
+        setQBConnecting(false);
+        return;
+      }
+
+      window.location.href = data.authUrl;
     } catch (err) {
-      setError("Failed to connect QuickBooks");
+      console.error("QB auth error:", err);
+      setError(`Failed to connect QuickBooks: ${err instanceof Error ? err.message : "Unknown error"}`);
       setQBConnecting(false);
     }
   };
