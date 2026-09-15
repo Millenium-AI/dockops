@@ -1,0 +1,2 @@
+[build]
+cacheDirectories = ["node_modules"]
