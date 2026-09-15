@@ -60,6 +60,32 @@ const migrations: Migration[] = [
       }
     },
   },
+  {
+    version: 3,
+    name: "add_qb_auth_state_tracking",
+    up: async (sql) => {
+      await sql`
+        CREATE TABLE IF NOT EXISTS qb_auth_states (
+          id SERIAL PRIMARY KEY,
+          state TEXT UNIQUE NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          expires_at TIMESTAMP NOT NULL,
+          used_at TIMESTAMP
+        )
+      `;
+
+      await sql`
+        CREATE TABLE IF NOT EXISTS qb_sync_audit_log (
+          id SERIAL PRIMARY KEY,
+          started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          completed_at TIMESTAMP,
+          estimates_imported INT DEFAULT 0,
+          error_message TEXT,
+          status TEXT DEFAULT 'pending'
+        )
+      `;
+    },
+  },
 ];
 
 export async function runMigrations(sql: ReturnType<typeof postgres>) {

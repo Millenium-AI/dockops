@@ -106,6 +106,46 @@ export class DatabaseStorage implements IStorage {
     return result[0] as { realmId: string; accessToken: string; refreshToken: string; expiresAt: Date } | undefined;
   }
 
+  async saveQBAuthState(state: string, expiresAt: Date): Promise<void> {
+    await sql`
+      INSERT INTO qb_auth_states (state, expires_at)
+      VALUES (${state}, ${expiresAt})
+    `;
+  }
+
+  async validateAndConsumeQBAuthState(state: string): Promise<boolean> {
+    const result = await sql`
+      UPDATE qb_auth_states
+      SET used_at = CURRENT_TIMESTAMP
+      WHERE state = ${state}
+        AND used_at IS NULL
+        AND expires_at > CURRENT_TIMESTAMP
+      RETURNING id
+    `;
+    return result.length > 0;
+  }
+
+  async logQBSyncStart(): Promise<number> {
+    const result = await sql`
+      INSERT INTO qb_sync_audit_log (status)
+      VALUES ('pending')
+      RETURNING id
+    `;
+    return result[0].id as number;
+  }
+
+  async logQBSyncComplete(id: number, estimatesImported: number, error?: string): Promise<void> {
+    await sql`
+      UPDATE qb_sync_audit_log
+      SET
+        completed_at = CURRENT_TIMESTAMP,
+        estimates_imported = ${estimatesImported},
+        error_message = ${error || null},
+        status = ${error ? 'failed' : 'success'}
+      WHERE id = ${id}
+    `;
+  }
+
 }
 
 export const storage = new DatabaseStorage();

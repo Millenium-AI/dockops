@@ -11,8 +11,11 @@ const QB_REDIRECT_URI = process.env.QB_REDIRECT_URI ||
 const QB_AUTH_URL = "https://quickbooks.api.intuit.com/v2/oauth2/tokens/oauth";
 const QB_API_URL = "https://quickbooks.api.intuit.com/v2/company";
 
-export function getQBAuthUrl(): string {
+export async function getQBAuthUrl(): Promise<{ url: string; state: string }> {
   const state = randomBytes(32).toString("hex");
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  await storage.saveQBAuthState(state, expiresAt);
+
   const params = new URLSearchParams({
     client_id: QB_CLIENT_ID,
     response_type: "code",
@@ -20,7 +23,10 @@ export function getQBAuthUrl(): string {
     redirect_uri: QB_REDIRECT_URI,
     state,
   });
-  return `${QB_AUTH_URL}?${params.toString()}`;
+  return {
+    url: `${QB_AUTH_URL}?${params.toString()}`,
+    state,
+  };
 }
 
 export async function exchangeAuthCode(code: string): Promise<{ realmId: string; accessToken: string; refreshToken: string; expiresIn: number }> {

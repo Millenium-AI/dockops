@@ -173,16 +173,31 @@ export async function registerRoutes(
 
   // ── QuickBooks Routes ──
 
-  app.get("/api/quickbooks/auth", requireAdmin, (req: AuthenticatedRequest, res: Response) => {
-    const authUrl = getQBAuthUrl();
-    return res.json({ authUrl });
+  app.get("/api/quickbooks/auth", requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { url, state } = await getQBAuthUrl();
+      return res.json({ authUrl: url, state });
+    } catch (error: any) {
+      console.error("QB auth URL error:", error);
+      return res.status(500).json({ message: "Failed to generate QB auth URL" });
+    }
   });
 
   app.get("/api/quickbooks/callback", async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { code } = req.query;
+      const { code, state } = req.query;
       if (!code || typeof code !== "string") {
         return res.status(400).json({ message: "Missing authorization code" });
+      }
+
+      if (!state || typeof state !== "string") {
+        return res.status(400).json({ message: "Missing state parameter" });
+      }
+
+      const stateValid = await storage.validateAndConsumeQBAuthState(state);
+      if (!stateValid) {
+        console.warn("QB callback received invalid or expired state");
+        return res.status(403).json({ message: "Invalid or expired state parameter" });
       }
 
       const { realmId, accessToken, refreshToken, expiresIn } = await exchangeAuthCode(code);
@@ -196,14 +211,18 @@ export async function registerRoutes(
   });
 
   app.post("/api/quickbooks/sync", requireAdmin, async (req: AuthenticatedRequest, res: Response) => {
+    const logId = await storage.logQBSyncStart();
     try {
       const result = await syncEstimates();
       if (result.error) {
+        await storage.logQBSyncComplete(logId, 0, result.error);
         return res.status(400).json({ message: result.error });
       }
+      await storage.logQBSyncComplete(logId, result.imported);
       return res.json({ message: `Imported ${result.imported} estimates` });
     } catch (error: any) {
       console.error("QB sync error:", error);
+      await storage.logQBSyncComplete(logId, 0, error.message);
       return res.status(500).json({ message: "Failed to sync estimates" });
     }
   });
