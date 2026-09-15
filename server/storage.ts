@@ -33,6 +33,19 @@ async function initializeTables() {
       )
     `;
 
+    // Create QB credentials table
+    await sql`
+      CREATE TABLE IF NOT EXISTS qb_credentials (
+        id SERIAL PRIMARY KEY,
+        realm_id TEXT UNIQUE NOT NULL,
+        access_token TEXT NOT NULL,
+        refresh_token TEXT NOT NULL,
+        expires_at TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
     // Add default whitelisted emails
     const emails = [
       "sal@satrianomarine.com",
@@ -124,6 +137,27 @@ export class DatabaseStorage implements IStorage {
     await sql`
       DELETE FROM whitelisted_emails WHERE email = ${email.toLowerCase()}
     `;
+  }
+
+  async saveQBCredentials(realmId: string, accessToken: string, refreshToken: string, expiresIn: number): Promise<void> {
+    const expiresAt = new Date(Date.now() + expiresIn * 1000);
+    await sql`
+      INSERT INTO qb_credentials (realm_id, access_token, refresh_token, expires_at)
+      VALUES (${realmId}, ${accessToken}, ${refreshToken}, ${expiresAt})
+      ON CONFLICT (realm_id) DO UPDATE SET
+        access_token = ${accessToken},
+        refresh_token = ${refreshToken},
+        expires_at = ${expiresAt},
+        updated_at = CURRENT_TIMESTAMP
+    `;
+  }
+
+  async getQBCredentials(): Promise<{ realmId: string; accessToken: string; refreshToken: string; expiresAt: Date } | undefined> {
+    const result = await sql`
+      SELECT realm_id as realmId, access_token as accessToken, refresh_token as refreshToken, expires_at as expiresAt
+      FROM qb_credentials LIMIT 1
+    `;
+    return result[0];
   }
 }
 

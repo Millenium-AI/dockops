@@ -5,6 +5,7 @@ import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
+import { getQBAuthUrl, exchangeAuthCode, syncEstimates } from "./quickbooks";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 
@@ -189,6 +190,50 @@ export async function registerRoutes(
     } catch (error) {
       console.error("Error removing email:", error);
       return res.status(500).json({ message: "Failed to remove email" });
+    }
+  });
+
+  // ── QuickBooks Routes ──
+
+  app.get("/api/quickbooks/auth", (req: Request, res: Response) => {
+    if (!req.isAdmin) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+    const authUrl = getQBAuthUrl();
+    return res.json({ authUrl });
+  });
+
+  app.get("/api/quickbooks/callback", async (req: Request, res: Response) => {
+    try {
+      const { code } = req.query;
+      if (!code || typeof code !== "string") {
+        return res.status(400).json({ message: "Missing authorization code" });
+      }
+
+      const { realmId, accessToken, refreshToken, expiresIn } = await exchangeAuthCode(code);
+      await storage.saveQBCredentials(realmId, accessToken, refreshToken, expiresIn);
+
+      return res.json({ message: "QuickBooks connected successfully" });
+    } catch (error: any) {
+      console.error("QB callback error:", error);
+      return res.status(500).json({ message: "Failed to connect QuickBooks" });
+    }
+  });
+
+  app.post("/api/quickbooks/sync", async (req: Request, res: Response) => {
+    if (!req.isAdmin) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+
+    try {
+      const result = await syncEstimates();
+      if (result.error) {
+        return res.status(400).json({ message: result.error });
+      }
+      return res.json({ message: `Imported ${result.imported} estimates` });
+    } catch (error: any) {
+      console.error("QB sync error:", error);
+      return res.status(500).json({ message: "Failed to sync estimates" });
     }
   });
 
