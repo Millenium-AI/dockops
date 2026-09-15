@@ -30,42 +30,42 @@ export default function Reporting() {
 
   return (
     <AppShell title="Reports & Financials">
-      <div className="space-y-6">
+      <div className="space-y-8">
         {/* Summary cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <div className="bg-card border border-border rounded-lg p-5">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
               <DollarSign className="w-4 h-4" />
               Outstanding Money
             </div>
             <div className="text-3xl font-bold">${(totalOwed / 1000).toFixed(1)}k</div>
-            <div className="text-xs text-muted-foreground mt-2">{activeJobs.length} active jobs</div>
+            <div className="text-xs text-muted-foreground mt-3">{activeJobs.length} active jobs</div>
           </div>
 
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+          <div className="bg-card border border-border rounded-lg p-5">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
               <Clock className="w-4 h-4" />
               Est. Workload
             </div>
             <div className="text-3xl font-bold">{activeJobs.reduce((sum, j) => sum + j.estimatedDays, 0)} days</div>
-            <div className="text-xs text-muted-foreground mt-2">Across all active jobs</div>
+            <div className="text-xs text-muted-foreground mt-3">Across all active jobs</div>
           </div>
 
-          <div className="bg-card border border-border rounded-lg p-4">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+          <div className="bg-card border border-border rounded-lg p-5">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
               <AlertCircle className="w-4 h-4" />
               Overdue
             </div>
             <div className="text-3xl font-bold">{overdue.length}</div>
-            <div className="text-xs text-muted-foreground mt-2">Waiting to start</div>
+            <div className="text-xs text-muted-foreground mt-3">Waiting to start</div>
           </div>
         </div>
 
         {/* Overdue jobs */}
         {overdue.length > 0 && (
-          <div className="bg-red-500/10 border border-red-300 rounded-lg p-4">
-            <h3 className="font-semibold text-red-900 mb-3">Overdue / Waiting to Start</h3>
-            <div className="space-y-2">
+          <div className="bg-red-500/10 border border-red-300 rounded-lg p-5">
+            <h3 className="font-semibold text-red-900 mb-4">Overdue / Waiting to Start</h3>
+            <div className="space-y-3">
               {overdue.map(job => (
                 <div key={job.id} className="flex items-center justify-between text-sm">
                   <div>
@@ -86,15 +86,15 @@ export default function Reporting() {
 
         {/* By crew */}
         <div>
-          <h3 className="text-lg font-semibold mb-3">Outstanding by Crew</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <h3 className="text-lg font-semibold mb-4">Outstanding by Crew</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             {Object.entries(byCrew).map(([crew, jobs]) => {
               const crewOwed = jobs.reduce((sum, j) => sum + j.amountOwed, 0);
               const crewDays = jobs.reduce((sum, j) => sum + j.estimatedDays, 0);
               return (
-                <div key={crew} className="bg-card border border-border rounded-lg p-4">
-                  <h4 className="font-semibold mb-2">{crew}</h4>
-                  <div className="space-y-2 text-sm">
+                <div key={crew} className="bg-card border border-border rounded-lg p-5">
+                  <h4 className="font-semibold mb-4">{crew}</h4>
+                  <div className="space-y-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Outstanding:</span>
                       <span className="font-semibold">${(crewOwed / 1000).toFixed(1)}k</span>
@@ -116,7 +116,7 @@ export default function Reporting() {
 
         {/* By job type */}
         <div>
-          <h3 className="text-lg font-semibold mb-3">Outstanding by Job Type</h3>
+          <h3 className="text-lg font-semibold mb-4">Outstanding by Job Type</h3>
           <div className="bg-card border border-border rounded-lg overflow-hidden">
             <div className="space-y-0">
               {Object.entries(byType).map(([type, jobs], idx) => {
@@ -125,7 +125,7 @@ export default function Reporting() {
                 return (
                   <div
                     key={type}
-                    className={`px-4 py-3 flex items-center justify-between ${
+                    className={`px-5 py-4 flex items-center justify-between ${
                       idx < Object.keys(byType).length - 1 ? "border-b border-border" : ""
                     }`}
                   >

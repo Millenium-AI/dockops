@@ -31,19 +31,19 @@ export default function Board() {
 
   return (
     <AppShell noPadding fluid title="Job Board">
-      <div className="space-y-4 px-[clamp(1rem,2vw,2rem)] py-4">
-        <div className="w-full bg-card border border-border rounded-lg px-4 py-3 flex">
+      <div className="space-y-6 px-[clamp(1.5rem,3vw,2.5rem)] py-6">
+        <div className="w-full bg-card border border-border rounded-lg px-6 py-4 flex">
           {stats.map((s, i) => (
-            <div key={s.label} className={`flex-1 px-3 ${i < stats.length - 1 ? "border-r border-border" : ""}`}>
+            <div key={s.label} className={`flex-1 px-4 ${i < stats.length - 1 ? "border-r border-border" : ""}`}>
               <div className="text-xs text-muted-foreground uppercase tracking-wider">{s.label}</div>
-              <div className="text-lg font-bold text-foreground">{s.value}</div>
+              <div className="text-lg font-bold text-foreground mt-1">{s.value}</div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex-1 overflow-hidden px-[clamp(1rem,2vw,2rem)] pb-[clamp(0.75rem,1.5vw,1.5rem)]">
-        <div className="flex gap-[clamp(0.5rem,0.75vw,0.75rem)] w-full h-full">
+      <div className="flex-1 overflow-hidden px-[clamp(1.5rem,3vw,2.5rem)] pb-[clamp(1rem,2vw,2rem)]">
+        <div className="flex gap-[clamp(1rem,1.5vw,1.25rem)] w-full h-full">
           {JOB_STATUSES.map(status => {
             const jobs = byStatus[status.id];
             return (
@@ -51,16 +51,16 @@ export default function Board() {
                 key={status.id}
                 className={`flex flex-col flex-1 min-w-0 bg-muted/40 rounded-xl border-t-2 ${STATUS_ACCENT[status.id]}`}
               >
-                <div className="flex items-center justify-between px-3 py-2.5 shrink-0">
+                <div className="flex items-center justify-between px-4 py-3.5 shrink-0">
                   <span className="text-sm font-semibold truncate">{status.label}</span>
-                  <span className="text-xs font-bold px-1.5 py-0.5 rounded-full shrink-0 ml-2 bg-foreground/10">
+                  <span className="text-xs font-bold px-2 py-0.5 rounded-full shrink-0 ml-2 bg-foreground/10">
                     {jobs.length}
                   </span>
                 </div>
 
-                <div className="flex flex-col gap-2 px-2 pb-3 overflow-y-auto flex-1">
+                <div className="flex flex-col gap-3 px-3 pb-4 overflow-y-auto flex-1">
                   {jobs.length === 0 && (
-                    <div className="text-xs text-muted-foreground/50 text-center py-6">No jobs</div>
+                    <div className="text-xs text-muted-foreground/50 text-center py-8">No jobs</div>
                   )}
                   {jobs.map(job => (
                     <JobCard key={job.id} job={job} onClick={setSelectedJob} />

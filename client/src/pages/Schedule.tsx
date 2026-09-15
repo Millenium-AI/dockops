@@ -23,7 +23,7 @@ function JobScheduleItem({ job, onClick }: { job: Job; onClick: (j: Job) => void
   return (
     <div
       onClick={() => onClick(job)}
-      className="px-3 py-2 flex items-center gap-2 cursor-pointer hover:bg-muted/50 transition-colors border-b border-border last:border-b-0"
+      className="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-muted/50 transition-colors border-b border-border last:border-b-0"
     >
       <div className="flex-1 min-w-0">
         <div className="font-medium text-sm">{job.customerName}</div>
@@ -44,7 +44,7 @@ function CalendarCell({ date, jobs, onClick }: { date: string; jobs: Job[]; onCl
   return (
     <div
       className={`
-        min-h-[100px] rounded-lg border p-2 flex flex-col gap-1 transition-colors
+        min-h-[120px] rounded-lg border p-3 flex flex-col gap-2 transition-colors
         ${today ? "ring-1 ring-primary bg-primary/5" : past ? "border-border/50 bg-muted/20" : "border-border bg-background/40"}
       `}
     >
@@ -52,12 +52,12 @@ function CalendarCell({ date, jobs, onClick }: { date: string; jobs: Job[]; onCl
         {new Date(date + "T12:00:00").getDate()}
         {today && <span className="ml-1 text-primary uppercase text-xs">Today</span>}
       </div>
-      <div className="space-y-1">
+      <div className="space-y-1.5 flex-1">
         {jobs.map(job => (
           <div
             key={job.id}
             onClick={() => onClick(job)}
-            className="text-xs p-1 rounded bg-primary/10 border border-primary/20 cursor-pointer hover:bg-primary/20 truncate font-medium"
+            className="text-xs p-1.5 rounded bg-primary/10 border border-primary/20 cursor-pointer hover:bg-primary/20 truncate font-medium"
           >
             {job.customerName}
           </div>
@@ -123,43 +123,43 @@ export default function Schedule() {
 
   return (
     <AppShell title="Schedule">
-      <div className="space-y-3 w-full">
+      <div className="space-y-6 w-full">
         {/* Toolbar */}
-        <div className="flex items-center gap-3 flex-wrap">
-          <div className="flex items-center gap-0.5 p-0.5 rounded-md border border-border bg-card">
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-1 p-1 rounded-md border border-border bg-card">
             {(["board", "calendar", "list"] as const).map(v => (
               <button
                 key={v}
                 onClick={() => setView(v)}
-                className={`h-7 px-3 text-xs font-medium rounded-[3px] transition-colors flex items-center gap-1.5 ${
+                className={`h-8 px-4 text-xs font-medium rounded-[4px] transition-colors flex items-center gap-2 ${
                   view === v ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
                 }`}
               >
-                {v === "board" ? <LayoutGrid className="w-3.5 h-3.5" /> :
-                 v === "calendar" ? <CalendarDays className="w-3.5 h-3.5" /> :
-                 <List className="w-3.5 h-3.5" />}
+                {v === "board" ? <LayoutGrid className="w-4 h-4" /> :
+                 v === "calendar" ? <CalendarDays className="w-4 h-4" /> :
+                 <List className="w-4 h-4" />}
                 {v.charAt(0).toUpperCase() + v.slice(1)}
               </button>
             ))}
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => setWeekOffset(o => o - 1)}
-              className="h-7 w-7 flex items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:text-foreground"
+              className="h-8 w-8 flex items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:text-foreground"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button
               onClick={() => setWeekOffset(o => o + 1)}
-              className="h-7 w-7 flex items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:text-foreground"
+              className="h-8 w-8 flex items-center justify-center rounded-md border border-border bg-card text-muted-foreground hover:text-foreground"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
 
           <Select value={crewFilter} onValueChange={setCrewFilter}>
-            <SelectTrigger className="h-8 w-[160px] text-sm bg-card border-border">
+            <SelectTrigger className="h-9 w-[180px] text-sm bg-card border-border">
               <SelectValue placeholder="Filter crew" />
             </SelectTrigger>
             <SelectContent>
@@ -174,10 +174,10 @@ export default function Schedule() {
 
         {/* Board view */}
         {view === "board" && (
-          <div className="grid grid-cols-7 gap-2 w-full">
+          <div className="grid grid-cols-7 gap-3 w-full">
             {weekDays.map(date => (
               <div key={date} className="bg-card border border-border rounded-lg overflow-hidden">
-                <div className={`px-2 py-1.5 text-xs font-semibold text-center ${isToday(date) ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
+                <div className={`px-3 py-2 text-xs font-semibold text-center ${isToday(date) ? "bg-primary text-primary-foreground" : "bg-muted"}`}>
                   {new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "numeric", day: "numeric" })}
                 </div>
                 <div className="divide-y divide-border">
@@ -197,14 +197,14 @@ export default function Schedule() {
         {/* Calendar view */}
         {view === "calendar" && (
           <div className="w-full">
-            <div className="grid grid-cols-7 gap-2 mb-2">
+            <div className="grid grid-cols-7 gap-3 mb-4">
               {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
-                <div key={d} className="text-xs uppercase tracking-wider text-muted-foreground font-medium text-center">
+                <div key={d} className="text-xs uppercase tracking-wider text-muted-foreground font-medium text-center py-2">
                   {d}
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-3">
               {Array.from({ length: (new Date(calDays[0] + "T12:00:00").getDay() + 6) % 7 }).map((_, i) => (
                 <div key={`pad-${i}`} />
               ))}
@@ -226,7 +226,7 @@ export default function Schedule() {
                   .sort(([a], [b]) => a.localeCompare(b))
                   .map(([date, dayJobs]) => (
                     <div key={date}>
-                      <div className="bg-muted/30 px-4 py-2 text-xs font-semibold text-muted-foreground uppercase sticky top-0 z-10">
+                      <div className="bg-muted/30 px-4 py-3 text-xs font-semibold text-muted-foreground uppercase sticky top-0 z-10">
                         {new Date(date + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
                       </div>
                       <div className="divide-y divide-border">
