@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { createServer } from 'node:http';
 import type { Server } from 'node:http';
 import { storage, ensureAdminSetup } from "./storage";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import { getQBAuthUrl, exchangeAuthCode, syncEstimates } from "./quickbooks";
