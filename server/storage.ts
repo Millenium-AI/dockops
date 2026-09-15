@@ -1,39 +1,62 @@
-import { users, whitelistedEmails } from '@shared/schema';
-import type { User, InsertUser, WhitelistedEmail, InsertWhitelistedEmail } from '@shared/schema';
-import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import { eq } from "drizzle-orm";
+import type { InsertUser, User, WhitelistedEmail } from '@shared/schema';
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
   throw new Error("DATABASE_URL environment variable is required");
 }
 
-const client = postgres(connectionString);
-export const db = drizzle(client);
+const sql = postgres(connectionString, {
+  ssl: process.env.NODE_ENV === "production" ? "require" : false,
+});
 
-// Initialize with default whitelisted emails if they don't exist
-async function initializeWhitelist() {
+// Initialize tables on startup
+async function initializeTables() {
   try {
-    // Try to check if table exists by querying it
-    const existing = await db.select().from(whitelistedEmails).all();
-    if (existing.length === 0) {
-      const defaultEmails = [
+    // Create users table
+    await sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        is_admin BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Create whitelisted_emails table
+    await sql`
+      CREATE TABLE IF NOT EXISTS whitelisted_emails (
+        id SERIAL PRIMARY KEY,
+        email TEXT UNIQUE NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Add default whitelisted emails if table is empty
+    const existing = await sql`SELECT COUNT(*) FROM whitelisted_emails`;
+    if (existing[0].count === 0) {
+      const emails = [
         "sal@satrianomarine.com",
         "maria@satrianomarine.com",
         "satrianomarine@gmail.com",
       ];
-      for (const email of defaultEmails) {
-        await db.insert(whitelistedEmails).values({ email }).catch(() => {});
+      for (const email of emails) {
+        await sql`
+          INSERT INTO whitelisted_emails (email)
+          VALUES (${email.toLowerCase()})
+          ON CONFLICT DO NOTHING
+        `;
       }
     }
+
+    console.log("✅ Database tables initialized");
   } catch (err: any) {
-    // Table doesn't exist yet - will be created by drizzle or on first access
-    console.log("Whitelist table not found, will initialize on first use");
+    console.error("⚠️  Error initializing tables:", err.message);
   }
 }
 
-initializeWhitelist();
+initializeTables();
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -47,40 +70,58 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.id, id));
-    return result[0];
+    const result = await sql`
+      SELECT id, email, password, is_admin as isAdmin, created_at as createdAt
+      FROM users WHERE id = ${id}
+    `;
+    return result[0] as User | undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    const result = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
-    return result[0];
+    const result = await sql`
+      SELECT id, email, password, is_admin as isAdmin, created_at as createdAt
+      FROM users WHERE email = ${email.toLowerCase()}
+    `;
+    return result[0] as User | undefined;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const result = await db.insert(users).values({
-      ...insertUser,
-      email: insertUser.email.toLowerCase(),
-    }).returning();
-    return result[0];
+    const result = await sql`
+      INSERT INTO users (email, password, is_admin)
+      VALUES (${insertUser.email.toLowerCase()}, ${insertUser.password}, ${insertUser.email === 'satrianomarine@gmail.com'})
+      RETURNING id, email, password, is_admin as isAdmin, created_at as createdAt
+    `;
+    return result[0] as User;
   }
 
   async isEmailWhitelisted(email: string): Promise<boolean> {
-    const result = await db.select().from(whitelistedEmails)
-      .where(eq(whitelistedEmails.email, email.toLowerCase()));
+    const result = await sql`
+      SELECT 1 FROM whitelisted_emails WHERE email = ${email.toLowerCase()}
+    `;
     return result.length > 0;
   }
 
   async getWhitelistedEmails(): Promise<WhitelistedEmail[]> {
-    return db.select().from(whitelistedEmails);
+    const result = await sql`
+      SELECT id, email, created_at as createdAt FROM whitelisted_emails
+    `;
+    return result as WhitelistedEmail[];
   }
 
   async addWhitelistedEmail(email: string): Promise<WhitelistedEmail> {
-    const result = await db.insert(whitelistedEmails).values({ email: email.toLowerCase() }).returning();
-    return result[0];
+    const result = await sql`
+      INSERT INTO whitelisted_emails (email)
+      VALUES (${email.toLowerCase()})
+      ON CONFLICT DO NOTHING
+      RETURNING id, email, created_at as createdAt
+    `;
+    return result[0] as WhitelistedEmail;
   }
 
   async removeWhitelistedEmail(email: string): Promise<void> {
-    await db.delete(whitelistedEmails).where(eq(whitelistedEmails.email, email.toLowerCase()));
+    await sql`
+      DELETE FROM whitelisted_emails WHERE email = ${email.toLowerCase()}
+    `;
   }
 }
 
