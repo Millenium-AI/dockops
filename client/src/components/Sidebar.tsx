@@ -14,7 +14,7 @@ const NAV = [
 ];
 
 const ADMIN_NAV = [
-  { href: "/admin", label: "Admin", icon: Zap },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar() {

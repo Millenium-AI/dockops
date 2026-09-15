@@ -44,7 +44,7 @@ function AppRouter({ isAuthenticated, isAdmin, isLoading }: { isAuthenticated: b
       <Route path="/" component={Board} />
       <Route path="/schedule" component={Schedule} />
       <Route path="/reporting" component={Reporting} />
-      <Route path="/admin" component={isAdmin ? Admin : NotFound} />
+      <Route path="/settings" component={isAdmin ? Admin : NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
