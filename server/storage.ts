@@ -171,6 +171,12 @@ export class DatabaseStorage implements IStorage {
     `;
     return result[0];
   }
+
+  async setAdminByEmail(email: string): Promise<void> {
+    await sql`
+      UPDATE users SET is_admin = true WHERE email = ${email.toLowerCase()}
+    `;
+  }
 }
 
 export const storage = new DatabaseStorage();

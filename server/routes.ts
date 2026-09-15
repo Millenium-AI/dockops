@@ -141,6 +141,29 @@ export async function registerRoutes(
     return res.json({ id: req.userId, email: req.email, isAdmin: req.isAdmin });
   });
 
+  // Debug endpoint - check actual database state
+  app.get("/api/debug/user", async (req: Request, res: Response) => {
+    if (!req.userId) {
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const user = await storage.getUser(req.userId);
+    return res.json({ user, tokenIsAdmin: req.isAdmin });
+  });
+
+  // Emergency fix - directly set admin for email
+  app.post("/api/debug/set-admin", async (req: Request, res: Response) => {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: "Email required" });
+    }
+    try {
+      await storage.setAdminByEmail(email);
+      return res.json({ message: `Set ${email} as admin` });
+    } catch (error) {
+      return res.status(500).json({ message: "Failed to set admin" });
+    }
+  });
+
   // ── Admin Routes ──
 
   app.get("/api/admin/emails", async (req: Request, res: Response) => {
