@@ -47,33 +47,36 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return db.select().from(users).where(eq(users.id, id)).get();
+    const result = await db.select().from(users).where(eq(users.id, id));
+    return result[0];
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return db.select().from(users).where(eq(users.email, email.toLowerCase())).get();
+    const result = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
+    return result[0];
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    return db.insert(users).values({
+    const result = await db.insert(users).values({
       ...insertUser,
       email: insertUser.email.toLowerCase(),
-    }).returning().get();
+    }).returning();
+    return result[0];
   }
 
   async isEmailWhitelisted(email: string): Promise<boolean> {
     const result = await db.select().from(whitelistedEmails)
-      .where(eq(whitelistedEmails.email, email.toLowerCase()))
-      .get();
-    return !!result;
+      .where(eq(whitelistedEmails.email, email.toLowerCase()));
+    return result.length > 0;
   }
 
   async getWhitelistedEmails(): Promise<WhitelistedEmail[]> {
-    return db.select().from(whitelistedEmails).all();
+    return db.select().from(whitelistedEmails);
   }
 
   async addWhitelistedEmail(email: string): Promise<WhitelistedEmail> {
-    return db.insert(whitelistedEmails).values({ email: email.toLowerCase() }).returning().get();
+    const result = await db.insert(whitelistedEmails).values({ email: email.toLowerCase() }).returning();
+    return result[0];
   }
 
   async removeWhitelistedEmail(email: string): Promise<void> {
