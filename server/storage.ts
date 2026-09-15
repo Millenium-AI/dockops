@@ -1,30 +1,16 @@
 import { users, whitelistedEmails } from '@shared/schema';
 import type { User, InsertUser, WhitelistedEmail, InsertWhitelistedEmail } from '@shared/schema';
-import { drizzle } from "drizzle-orm/better-sqlite3";
-import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import { eq } from "drizzle-orm";
 
-const sqlite = new Database("data.db");
-sqlite.pragma("journal_mode = WAL");
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is required");
+}
 
-export const db = drizzle(sqlite);
-
-// Initialize schema if tables don't exist
-sqlite.exec(`
-  CREATE TABLE IF NOT EXISTS whitelisted_emails (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    password TEXT NOT NULL,
-    isAdmin INTEGER NOT NULL DEFAULT 0,
-    createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
-  );
-`);
+const client = postgres(connectionString);
+export const db = drizzle(client);
 
 // Initialize with default whitelisted emails if they don't exist
 async function initializeWhitelist() {
