@@ -8,7 +8,7 @@ import NotFound from "@/pages/not-found";
 
 import Board from "@/pages/Board";
 import Schedule from "@/pages/Schedule";
-import Customers from "@/pages/Customers";
+import Reporting from "@/pages/Reporting";
 
 function useHashLocationNoQuery(): [string, (to: string) => void] {
   const [hashLoc, navigate] = useHashLocation();
@@ -21,7 +21,7 @@ function AppRouter() {
     <Switch>
       <Route path="/" component={Board} />
       <Route path="/schedule" component={Schedule} />
-      <Route path="/customers" component={Customers} />
+      <Route path="/reporting" component={Reporting} />
       <Route component={NotFound} />
     </Switch>
   );

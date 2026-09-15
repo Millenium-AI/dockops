@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  LayoutDashboard, Users, CalendarRange, Anchor, ChevronLeft, ChevronRight,
+  LayoutDashboard, CalendarRange, BarChart3, Wrench, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import {
   Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
@@ -10,7 +10,7 @@ import {
 const NAV = [
   { href: "/",          label: "Board",     icon: LayoutDashboard },
   { href: "/schedule",  label: "Schedule",  icon: CalendarRange },
-  { href: "/customers", label: "Customers", icon: Users },
+  { href: "/reporting", label: "Reports",   icon: BarChart3 },
 ];
 
 export function Sidebar() {
@@ -46,13 +46,13 @@ export function Sidebar() {
         <div className="px-4 pt-4 pb-3 border-b border-border">
           <Link href="/" className={`flex items-center gap-2.5 group ${collapsed ? "justify-center px-0" : ""}`}>
             <div className="grid place-items-center w-8 h-8 rounded-md bg-primary/10 border border-primary/20 shrink-0">
-              <Anchor className="w-4 h-4 text-primary" strokeWidth={2.4} />
+              <Wrench className="w-4 h-4 text-primary" strokeWidth={2.4} />
             </div>
             {!collapsed && (
               <div>
-                <div className="text-base font-semibold tracking-tight leading-tight">DockOps</div>
+                <div className="text-base font-semibold tracking-tight leading-tight">JobTracker</div>
                 <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground/80 leading-tight">
-                  Marine Ops
+                  Work Scheduler
                 </div>
               </div>
             )}

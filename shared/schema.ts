@@ -46,43 +46,25 @@ export type Customer = typeof customers.$inferSelect;
 export const jobs = sqliteTable("jobs", {
   id:           text("id").primaryKey(),
   jobNumber:    text("job_number").notNull().unique(),
-  customerId:   text("customer_id").notNull().references(() => customers.id),
+  customerName: text("customer_name").notNull(),
+  customerPhone: text("customer_phone").default(""),
+  address:      text("address").default(""),
 
-  // Denormalized for board card display
-  customerName: text("customer_name").notNull().default(""),
-  address:      text("address").notNull().default(""),
-  city:         text("city").notNull().default(""),
-
-  dockType:     text("dock_type").notNull().default("fixed_dock"),
-  scopeSummary: text("scope_summary").default(""),
-
-  // Pipeline
-  stage:        text("stage").notNull().default("lead"),
-  health:       text("health").notNull().default("on_track"),
-  daysInStage:  integer("days_in_stage").notNull().default(0),
-  blockingIssue: text("blocking_issue"),
-
-  // Financials
-  contractAmount:  real("contract_amount").notNull().default(0),
-  depositReceived: integer("deposit_received", { mode: "boolean" }).notNull().default(false),
+  // Job info
+  jobType:      text("job_type").notNull(),  // Category (e.g., dock repair, install, etc.)
+  status:       text("status").notNull().default("pending"),  // pending, scheduled, in_progress, completed
+  amountOwed:   real("amount_owed").notNull().default(0),
+  estimatedDays: integer("estimated_days").notNull().default(0),
 
   // Scheduling
-  scheduledStart: text("scheduled_start"),   // ISO date
-  estCompletion:  text("est_completion"),     // ISO date
+  scheduledDate: text("scheduled_date"),    // ISO date when work is scheduled
+  estimatedCompletionDate: text("estimated_completion_date"), // ISO date
 
   // Crew
-  assignedCrew: text("assigned_crew"),
-
-  // Permit block
-  permitRequired:       integer("permit_required", { mode: "boolean" }).notNull().default(false),
-  permitStatus:         text("permit_status").notNull().default("not_required"),
-  permitAgency:         text("permit_agency"),
-  permitSubmittedDate:  text("permit_submitted_date"),  // ISO date
-  permitTargetDate:     text("permit_target_date"),     // ISO date — drives urgency
-  permitNotes:          text("permit_notes").default(""),
+  assignedCrew: text("assigned_crew").default(""),
 
   // Notes
-  jobNotes: text("job_notes").default(""),
+  notes: text("notes").default(""),
 
   // Timestamps
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
