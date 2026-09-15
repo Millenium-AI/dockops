@@ -33,21 +33,18 @@ async function initializeTables() {
       )
     `;
 
-    // Add default whitelisted emails if table is empty
-    const existing = await sql`SELECT COUNT(*) FROM whitelisted_emails`;
-    if (existing[0].count === 0) {
-      const emails = [
-        "sal@satrianomarine.com",
-        "maria@satrianomarine.com",
-        "satrianomarine@gmail.com",
-      ];
-      for (const email of emails) {
-        await sql`
-          INSERT INTO whitelisted_emails (email)
-          VALUES (${email.toLowerCase()})
-          ON CONFLICT DO NOTHING
-        `;
-      }
+    // Add default whitelisted emails
+    const emails = [
+      "sal@satrianomarine.com",
+      "maria@satrianomarine.com",
+      "satrianomarine@gmail.com",
+    ];
+    for (const email of emails) {
+      await sql`
+        INSERT INTO whitelisted_emails (email)
+        VALUES (${email.toLowerCase()})
+        ON CONFLICT (email) DO NOTHING
+      `;
     }
 
     console.log("✅ Database tables initialized");
