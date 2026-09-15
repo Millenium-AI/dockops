@@ -66,7 +66,7 @@ async function initializeTables() {
   }
 }
 
-async function startup() {
+export async function ensureAdminSetup() {
   await initializeTables();
   try {
     await sql`
@@ -78,7 +78,7 @@ async function startup() {
   }
 }
 
-startup();
+initializeTables();
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;

@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer } from 'node:http';
 import type { Server } from 'node:http';
-import { storage } from "./storage";
+import { storage, ensureAdminSetup } from "./storage";
 import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
@@ -38,6 +38,8 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
+  await ensureAdminSetup();
+
   app.use(cookieParser());
   app.use(authMiddleware);
 
