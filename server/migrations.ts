@@ -86,6 +86,15 @@ const migrations: Migration[] = [
       `;
     },
   },
+  {
+    version: 4,
+    name: "add_job_sort_order",
+    up: async (sql) => {
+      await sql`
+        ALTER TABLE jobs ADD COLUMN sort_order INT DEFAULT 0
+      `;
+    },
+  },
 ];
 
 export async function runMigrations(sql: ReturnType<typeof postgres>) {

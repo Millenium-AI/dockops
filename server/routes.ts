@@ -237,5 +237,51 @@ export async function registerRoutes(
     }
   });
 
+  // ── Job Endpoints ──
+
+  app.put("/api/jobs/:id", requireAuth, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { assignedBarge, sortOrder } = req.body;
+
+      if (assignedBarge === undefined && sortOrder === undefined) {
+        return res.status(400).json({ message: "Must provide assignedBarge or sortOrder" });
+      }
+
+      const updates: string[] = [];
+      const values: any[] = [];
+      let paramIndex = 1;
+
+      if (assignedBarge !== undefined) {
+        updates.push(`assigned_barge = $${paramIndex}`);
+        values.push(assignedBarge || null);
+        paramIndex++;
+      }
+
+      if (sortOrder !== undefined) {
+        updates.push(`sort_order = $${paramIndex}`);
+        values.push(sortOrder);
+        paramIndex++;
+      }
+
+      updates.push(`updated_at = NOW()`);
+
+      values.push(id);
+
+      const query = `
+        UPDATE jobs
+        SET ${updates.join(", ")}
+        WHERE id = $${paramIndex}
+        RETURNING *
+      `;
+
+      const result = await storage.updateJob(id, { assignedBarge, sortOrder });
+      return res.json(result);
+    } catch (error: any) {
+      console.error("Job update error:", error);
+      return res.status(500).json({ message: "Failed to update job" });
+    }
+  });
+
   return httpServer;
 }

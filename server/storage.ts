@@ -146,6 +146,43 @@ export class DatabaseStorage implements IStorage {
     `;
   }
 
+  async updateJob(jobId: string, updates: { assignedBarge?: string | null; sortOrder?: number }): Promise<any> {
+    const setClauses: string[] = [];
+    const values: any[] = [];
+    let paramIndex = 1;
+
+    if (updates.assignedBarge !== undefined) {
+      setClauses.push(`assigned_barge = $${paramIndex}`);
+      values.push(updates.assignedBarge || null);
+      paramIndex++;
+    }
+
+    if (updates.sortOrder !== undefined) {
+      setClauses.push(`sort_order = $${paramIndex}`);
+      values.push(updates.sortOrder);
+      paramIndex++;
+    }
+
+    setClauses.push("updated_at = NOW()");
+
+    if (setClauses.length === 1) {
+      // Only updated_at, no other changes
+      return null;
+    }
+
+    values.push(jobId);
+
+    const query = `
+      UPDATE jobs
+      SET ${setClauses.join(", ")}
+      WHERE id = $${paramIndex}
+      RETURNING *
+    `;
+
+    const result = await sql.unsafe(query, values);
+    return result[0];
+  }
+
 }
 
 export const storage = new DatabaseStorage();

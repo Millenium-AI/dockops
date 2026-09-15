@@ -48,9 +48,15 @@ export default function Board() {
     if (!job || job.assignedBarge === targetBarge) return;
 
     setJobs(jobs.map(j =>
-      j.id === jobId ? { ...j, assignedBarge: targetBarge } : j
+      j.id === jobId ? { ...j, assignedBarge: targetBarge || null } : j
     ));
-    // TODO: API call to persist
+
+    // Persist to API
+    fetch(`/api/jobs/${jobId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assignedBarge: targetBarge || null }),
+    }).catch(err => console.error("Failed to update job:", err));
   };
 
   const bargeList = Object.keys(byBarge).sort();
