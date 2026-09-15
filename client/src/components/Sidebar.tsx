@@ -36,7 +36,7 @@ export function Sidebar() {
   useEffect(() => {
     const checkAdmin = async () => {
       try {
-        const res = await fetch("/api/auth/me");
+        const res = await fetch("/api/auth/me", { credentials: "include" });
         if (res.ok) {
           const data = await res.json();
           setIsAdmin(data.isAdmin || false);
