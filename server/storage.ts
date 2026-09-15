@@ -1,5 +1,6 @@
 import postgres from "postgres";
 import type { InsertUser, User, WhitelistedEmail } from '@shared/schema';
+import { runMigrations } from "./migrations";
 
 const connectionString = process.env.DATABASE_URL;
 if (!connectionString) {
@@ -10,75 +11,9 @@ const sql = postgres(connectionString, {
   ssl: process.env.NODE_ENV === "production" ? "require" : false,
 });
 
-// Initialize tables on startup
-async function initializeTables() {
-  try {
-    // Create users table
-    await sql`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        is_admin BOOLEAN DEFAULT false,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
-    // Create whitelisted_emails table
-    await sql`
-      CREATE TABLE IF NOT EXISTS whitelisted_emails (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
-    // Create QB credentials table
-    await sql`
-      CREATE TABLE IF NOT EXISTS qb_credentials (
-        id SERIAL PRIMARY KEY,
-        realm_id TEXT UNIQUE NOT NULL,
-        access_token TEXT NOT NULL,
-        refresh_token TEXT NOT NULL,
-        expires_at TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
-    // Add default whitelisted emails
-    const emails = [
-      "sal@satrianomarine.com",
-      "maria@satrianomarine.com",
-      "satrianomarine@gmail.com",
-    ];
-    for (const email of emails) {
-      await sql`
-        INSERT INTO whitelisted_emails (email)
-        VALUES (${email.toLowerCase()})
-        ON CONFLICT (email) DO NOTHING
-      `;
-    }
-
-    console.log("✅ Database tables initialized");
-  } catch (err: any) {
-    console.error("⚠️  Error initializing tables:", err.message);
-  }
-}
-
 export async function ensureAdminSetup() {
-  await initializeTables();
-  try {
-    await sql`
-      UPDATE users SET is_admin = true WHERE email = 'satrianomarine@gmail.com'
-    `;
-    console.log("✅ Admin user configured");
-  } catch (err: any) {
-    console.error("⚠️  Error setting admin:", err.message);
-  }
+  await runMigrations(sql);
 }
-
-initializeTables();
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -109,10 +44,9 @@ export class DatabaseStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const emailLower = insertUser.email.toLowerCase();
-    const isAdmin = emailLower === 'satrianomarine@gmail.com';
     const result = await sql`
       INSERT INTO users (email, password, is_admin)
-      VALUES (${emailLower}, ${insertUser.password}, ${isAdmin})
+      VALUES (${emailLower}, ${insertUser.password}, false)
       RETURNING id, email, password, is_admin as isAdmin, created_at as createdAt
     `;
     if (!result || result.length === 0) {
@@ -169,14 +103,9 @@ export class DatabaseStorage implements IStorage {
       SELECT realm_id as realmId, access_token as accessToken, refresh_token as refreshToken, expires_at as expiresAt
       FROM qb_credentials LIMIT 1
     `;
-    return result[0];
+    return result[0] as { realmId: string; accessToken: string; refreshToken: string; expiresAt: Date } | undefined;
   }
 
-  async setAdminByEmail(email: string): Promise<void> {
-    await sql`
-      UPDATE users SET is_admin = true WHERE email = ${email.toLowerCase()}
-    `;
-  }
 }
 
 export const storage = new DatabaseStorage();

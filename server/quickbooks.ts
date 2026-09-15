@@ -1,22 +1,24 @@
 import { storage } from "./storage";
+import { randomBytes } from "crypto";
 
 const QB_CLIENT_ID = process.env.QB_CLIENT_ID || "";
 const QB_CLIENT_SECRET = process.env.QB_CLIENT_SECRET || "";
 const QB_REDIRECT_URI = process.env.QB_REDIRECT_URI ||
   (process.env.NODE_ENV === "production"
-    ? "https://your-railway-url.com/api/quickbooks/callback"
+    ? "https://board.satrianomarine.com/api/quickbooks/callback"
     : "http://localhost:5173/api/quickbooks/callback");
 
 const QB_AUTH_URL = "https://quickbooks.api.intuit.com/v2/oauth2/tokens/oauth";
 const QB_API_URL = "https://quickbooks.api.intuit.com/v2/company";
 
 export function getQBAuthUrl(): string {
+  const state = randomBytes(32).toString("hex");
   const params = new URLSearchParams({
     client_id: QB_CLIENT_ID,
     response_type: "code",
     scope: "com.intuit.quickbooks.accounting",
     redirect_uri: QB_REDIRECT_URI,
-    state: Math.random().toString(36).substring(7),
+    state,
   });
   return `${QB_AUTH_URL}?${params.toString()}`;
 }
@@ -42,8 +44,11 @@ export async function exchangeAuthCode(code: string): Promise<{ realmId: string;
   }
 
   const data = await response.json() as any;
+  if (!data.realm_id) {
+    throw new Error("Failed to extract realm_id from QuickBooks response");
+  }
   return {
-    realmId: data.x_refresh_token_expires_in ? data.realm_id : "",
+    realmId: data.realm_id,
     accessToken: data.access_token,
     refreshToken: data.refresh_token,
     expiresIn: data.expires_in,
