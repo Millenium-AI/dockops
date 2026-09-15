@@ -5,6 +5,7 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { AuthContext } from "./lib/auth-context";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/Login";
 import Signup from "@/pages/Signup";
@@ -80,9 +81,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        <Router hook={useHashLocationNoQuery}>
-          <AppRouter isAuthenticated={isAuthenticated} isAdmin={isAdmin} isLoading={isLoading} />
-        </Router>
+        <AuthContext.Provider value={{ isAuthenticated, isAdmin, isLoading }}>
+          <Router hook={useHashLocationNoQuery}>
+            <AppRouter isAuthenticated={isAuthenticated} isAdmin={isAdmin} isLoading={isLoading} />
+          </Router>
+        </AuthContext.Provider>
       </TooltipProvider>
     </QueryClientProvider>
   );

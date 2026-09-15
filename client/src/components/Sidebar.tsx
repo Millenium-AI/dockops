@@ -6,6 +6,7 @@ import {
 import {
   Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
 } from "@/components/ui/tooltip";
+import { useAuth } from "@/lib/auth-context";
 
 const NAV = [
   { href: "/",          label: "Board",     icon: LayoutDashboard },
@@ -20,7 +21,7 @@ const ADMIN_NAV = [
 export function Sidebar() {
   const [loc] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { isAdmin } = useAuth();
 
   useEffect(() => {
     const handleResize = () => {
@@ -31,22 +32,6 @@ export function Sidebar() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  useEffect(() => {
-    const checkAdmin = async () => {
-      try {
-        const res = await fetch("/api/auth/me", { credentials: "include" });
-        if (res.ok) {
-          const data = await res.json();
-          setIsAdmin(data.isAdmin || false);
-        }
-      } catch (err) {
-        console.error("Failed to check admin status:", err);
-      }
-    };
-
-    checkAdmin();
   }, []);
 
   const width = collapsed

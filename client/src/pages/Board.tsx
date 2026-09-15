@@ -45,18 +45,31 @@ export default function Board() {
     e.preventDefault();
     const jobId = e.dataTransfer.getData("jobId");
     const job = jobs.find(j => j.id === jobId);
-    if (!job || job.assignedBarge === targetBarge) return;
+    if (!job) return;
 
-    setJobs(jobs.map(j =>
-      j.id === jobId ? { ...j, assignedBarge: targetBarge || null } : j
-    ));
+    let newJobs = jobs.filter(j => j.id !== jobId);
+    newJobs.push({ ...job, assignedBarge: targetBarge || null });
 
-    // Persist to API
-    fetch(`/api/jobs/${jobId}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ assignedBarge: targetBarge || null }),
-    }).catch(err => console.error("Failed to update job:", err));
+    let sortIndex = 0;
+    newJobs = newJobs.map(j =>
+      j.assignedBarge === targetBarge
+        ? { ...j, sortOrder: sortIndex++ }
+        : j
+    );
+
+    setJobs(newJobs);
+
+    const updatedJob = newJobs.find(j => j.id === jobId);
+    if (updatedJob) {
+      fetch(`/api/jobs/${jobId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          assignedBarge: updatedJob.assignedBarge || null,
+          sortOrder: updatedJob.sortOrder,
+        }),
+      }).catch(err => console.error("Failed to update job:", err));
+    }
   };
 
   const bargeList = Object.keys(byBarge).sort();
