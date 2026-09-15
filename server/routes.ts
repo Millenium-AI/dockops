@@ -34,6 +34,16 @@ export async function registerRoutes(
   app.use(cookieParser());
   app.use(authMiddleware);
 
+  // ── Health Check ──
+
+  app.get("/health", async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      res.json({ status: "ok", timestamp: new Date().toISOString() });
+    } catch (error) {
+      res.status(503).json({ status: "error", message: "Service unavailable" });
+    }
+  });
+
   // ── Auth Routes ──
 
   app.post("/api/auth/signup", async (req: AuthenticatedRequest, res: Response) => {
