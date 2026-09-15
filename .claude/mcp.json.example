@@ -3,7 +3,10 @@
     "supabase": {
       "command": "node",
       "args": ["-e", "require('ts-node/register'); require('./server/mcp-supabase.ts')"],
-      "env": {}
+      "env": {
+        "SUPABASE_URL": "https://your-project.supabase.co",
+        "SUPABASE_ANON_KEY": "your-anon-key-here"
+      }
     }
   }
 }
