@@ -1,0 +1,92 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: dockops_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript type check
+        run: npm run check
+
+      - name: Build
+        run: npm run build
+
+      - name: Run migrations and health check
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/dockops_test
+          NODE_ENV: production
+        run: |
+          # Start server in background
+          timeout 30s npm start &
+          SERVER_PID=$!
+
+          # Wait for server to be ready
+          sleep 5
+
+          # Health check
+          curl -f http://localhost:5000/health || exit 1
+
+          # Verify migrations ran
+          psql $DATABASE_URL -c "SELECT COUNT(*) FROM _schema_version;" | grep -q "3" || exit 1
+
+          # Clean up
+          kill $SERVER_PID || true
+
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.11.0'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for console.log (dev artifacts)
+        run: |
+          ! grep -r "console\.log" server/ || exit 1
+
+      - name: Check no debug endpoints
+        run: |
+          ! grep -r "api/debug" server/ || exit 1
+
+      - name: Verify no hardcoded secrets
+        run: |
+          ! grep -r "password\|secret\|token" server/ --include="*.ts" | grep -v "password_hash\|JWT_SECRET\|QB_CLIENT_SECRET" || exit 1
