@@ -3,7 +3,7 @@ import { randomBytes } from "crypto";
 
 const QB_CLIENT_ID = process.env.QB_CLIENT_ID || "";
 const QB_CLIENT_SECRET = process.env.QB_CLIENT_SECRET || "";
-const QB_REDIRECT_URI = process.env.QB_REDIRECT_URI ||
+const QB_REDIRECT_URI = process.env.QB_REDIRECT_URL ||
   (process.env.NODE_ENV === "production"
     ? "https://board.satrianomarine.com/api/quickbooks/callback"
     : "http://localhost:5173/api/quickbooks/callback");
