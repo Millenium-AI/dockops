@@ -7,13 +7,14 @@ import { z } from "zod";
 // ---------------------
 
 export const users = sqliteTable("users", {
-  id:       integer("id").primaryKey({ autoIncrement: true }),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  id:        integer("id").primaryKey({ autoIncrement: true }),
+  email:     text("email").notNull().unique(),
+  password:  text("password").notNull(),
+  createdAt: text("created_at").notNull().default(new Date().toISOString()),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
-  username: true,
+  email: true,
   password: true,
 });
 

@@ -9,9 +9,20 @@ sqlite.pragma("journal_mode = WAL");
 
 export const db = drizzle(sqlite);
 
+// Whitelisted emails
+const ALLOWED_EMAILS = [
+  "sal@satrianomarine.com",
+  "maria@satrianomarine.com",
+  "satrianomarine@gmail.com",
+];
+
+export function isEmailWhitelisted(email: string): boolean {
+  return ALLOWED_EMAILS.includes(email.toLowerCase());
+}
+
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
 }
 
@@ -20,12 +31,15 @@ export class DatabaseStorage implements IStorage {
     return db.select().from(users).where(eq(users.id, id)).get();
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
-    return db.select().from(users).where(eq(users.username, username)).get();
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return db.select().from(users).where(eq(users.email, email.toLowerCase())).get();
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    return db.insert(users).values(insertUser).returning().get();
+    return db.insert(users).values({
+      ...insertUser,
+      email: insertUser.email.toLowerCase(),
+    }).returning().get();
   }
 }
 

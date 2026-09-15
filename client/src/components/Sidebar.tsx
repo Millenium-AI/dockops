@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  LayoutDashboard, CalendarRange, BarChart3, Wrench, ChevronLeft, ChevronRight,
+  LayoutDashboard, CalendarRange, BarChart3, Wrench, ChevronLeft, ChevronRight, LogOut,
 } from "lucide-react";
 import {
   Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
@@ -109,18 +109,31 @@ export function Sidebar() {
         </nav>
 
         {/* Footer */}
-        <div className="border-t border-border px-3 py-3">
-          <div className={`flex items-center gap-2.5 ${collapsed ? "justify-center" : ""}`}>
-            <div className="w-8 h-8 rounded-full bg-primary/15 border border-primary/25 grid place-items-center text-primary text-xs font-semibold shrink-0">
-              NW
-            </div>
-            {!collapsed && (
-              <div className="leading-tight overflow-hidden">
-                <div className="text-sm font-medium truncate">Nick — Owner</div>
-                <div className="text-xs text-muted-foreground">Tampa Bay Marine</div>
-              </div>
+        <div className="border-t border-border px-2 py-3 space-y-2">
+          <button
+            onClick={async () => {
+              await fetch("/api/auth/logout", { method: "POST" });
+              window.location.href = "/";
+            }}
+            className={`w-full flex items-center rounded-md text-sm transition-colors h-9 text-muted-foreground hover:bg-muted/50 ${
+              collapsed ? "px-0 justify-center" : "gap-2.5 px-3"
+            }`}
+            title="Logout"
+          >
+            {collapsed ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <LogOut className="w-4 h-4 shrink-0" strokeWidth={1.8} />
+                </TooltipTrigger>
+                <TooltipContent side="right">Logout</TooltipContent>
+              </Tooltip>
+            ) : (
+              <>
+                <LogOut className="w-4 h-4 shrink-0" strokeWidth={1.8} />
+                <span className="font-medium text-sm">Logout</span>
+              </>
             )}
-          </div>
+          </button>
         </div>
       </aside>
     </TooltipProvider>
