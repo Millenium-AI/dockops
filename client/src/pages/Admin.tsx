@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Link as LinkIcon } from "lucide-react";
 
 interface WhitelistedEmail {
   id: number;
@@ -14,6 +14,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [qbConnecting, setQBConnecting] = useState(false);
 
   useEffect(() => {
     fetchEmails();
@@ -82,6 +83,20 @@ export default function Admin() {
       await fetchEmails();
     } catch (err) {
       setError("Network error. Please try again.");
+    }
+  };
+
+  const handleConnectQB = async () => {
+    setQBConnecting(true);
+    try {
+      const res = await fetch("/api/quickbooks/auth");
+      const data = await res.json();
+      if (data.authUrl) {
+        window.location.href = data.authUrl;
+      }
+    } catch (err) {
+      setError("Failed to connect QuickBooks");
+      setQBConnecting(false);
     }
   };
 
@@ -156,6 +171,21 @@ export default function Admin() {
           )}
         </div>
 
+        <div className="bg-card border border-border rounded-lg p-6">
+          <h2 className="text-lg font-semibold mb-4">QuickBooks Integration</h2>
+          <p className="text-sm text-muted-foreground mb-4">
+            Connect your QuickBooks account to automatically import approved estimates as jobs.
+          </p>
+          <button
+            onClick={handleConnectQB}
+            disabled={qbConnecting}
+            className="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+          >
+            <LinkIcon className="w-4 h-4" />
+            {qbConnecting ? "Connecting..." : "Connect QuickBooks"}
+          </button>
+        </div>
+
         <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
           <div className="text-sm text-blue-900 dark:text-blue-200">
             <div className="font-semibold mb-2">How it works:</div>
@@ -163,7 +193,7 @@ export default function Admin() {
               <li>Only whitelisted emails can create accounts</li>
               <li>New team members can sign up at <code className="bg-black/20 px-1 rounded">/signup</code></li>
               <li>You can remove emails anytime to prevent new signups</li>
-              <li>Existing accounts are not affected by whitelist changes</li>
+              <li>Connect QB to import approved estimates as jobs</li>
             </ul>
           </div>
         </div>
