@@ -68,13 +68,6 @@ export async function registerRoutes(
         password: hashedPassword,
       });
 
-      // Set admin status if it's the admin email
-      if (isAdmin) {
-        await storage.db.update(storage.db.users).set({ isAdmin: true }).where(
-          storage.db.users.email.eq(email.toLowerCase())
-        );
-      }
-
       const token = jwt.sign(
         { id: user.id, email: user.email, isAdmin },
         JWT_SECRET,

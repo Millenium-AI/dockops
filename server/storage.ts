@@ -83,11 +83,15 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const isAdmin = insertUser.email === 'satrianomarine@gmail.com';
     const result = await sql`
       INSERT INTO users (email, password, is_admin)
-      VALUES (${insertUser.email.toLowerCase()}, ${insertUser.password}, ${insertUser.email === 'satrianomarine@gmail.com'})
+      VALUES (${insertUser.email.toLowerCase()}, ${insertUser.password}, ${isAdmin})
       RETURNING id, email, password, is_admin as isAdmin, created_at as createdAt
     `;
+    if (!result || result.length === 0) {
+      throw new Error("Failed to create user");
+    }
     return result[0] as User;
   }
 
