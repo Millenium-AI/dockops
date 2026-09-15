@@ -88,10 +88,23 @@ const migrations: Migration[] = [
   },
   {
     version: 4,
-    name: "add_job_sort_order",
+    name: "create_jobs_and_add_sort_order",
     up: async (sql) => {
       await sql`
-        ALTER TABLE jobs ADD COLUMN sort_order INT DEFAULT 0
+        CREATE TABLE IF NOT EXISTS jobs (
+          id TEXT PRIMARY KEY,
+          customer_name TEXT NOT NULL,
+          job_number TEXT NOT NULL,
+          job_type TEXT NOT NULL,
+          area TEXT,
+          amount_owed INT DEFAULT 0,
+          lead_guy TEXT,
+          assigned_barge TEXT,
+          sort_order INT DEFAULT 0,
+          scheduled_date TIMESTAMP,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
       `;
     },
   },
