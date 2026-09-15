@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { createServer } from 'node:http';
 import type { Server } from 'node:http';
-import { storage, isEmailWhitelisted } from "./storage";
+import { storage } from "./storage";
 import bcrypt from "bcrypt";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
