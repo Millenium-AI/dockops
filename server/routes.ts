@@ -13,6 +13,7 @@ declare global {
     interface Request {
       userId?: number;
       email?: string;
+      isAdmin?: boolean;
     }
   }
 }
@@ -25,6 +26,7 @@ const authMiddleware = (req: Request, res: Response, next: Function) => {
     const decoded = jwt.verify(token, JWT_SECRET) as any;
     req.userId = decoded.id;
     req.email = decoded.email;
+    req.isAdmin = decoded.isAdmin || false;
   } catch (err) {
     res.clearCookie("token");
   }
@@ -48,7 +50,8 @@ export async function registerRoutes(
         return res.status(400).json({ message: "Email and password required" });
       }
 
-      if (!isEmailWhitelisted(email)) {
+      const isWhitelisted = await storage.isEmailWhitelisted(email);
+      if (!isWhitelisted) {
         return res.status(403).json({ message: "Email not authorized for signup" });
       }
 
@@ -58,13 +61,22 @@ export async function registerRoutes(
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
+      const isAdmin = email.toLowerCase() === "satrianomarine@gmail.com";
+
       const user = await storage.createUser({
         email,
         password: hashedPassword,
       });
 
+      // Set admin status if it's the admin email
+      if (isAdmin) {
+        await storage.db.update(storage.db.users).set({ isAdmin: true }).where(
+          storage.db.users.email.eq(email.toLowerCase())
+        );
+      }
+
       const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user.id, email: user.email, isAdmin },
         JWT_SECRET,
         { expiresIn: "7d" }
       );
@@ -76,7 +88,7 @@ export async function registerRoutes(
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.json({ message: "Signup successful", user: { id: user.id, email: user.email } });
+      return res.json({ message: "Signup successful", user: { id: user.id, email: user.email, isAdmin } });
     } catch (error) {
       console.error("Signup error:", error);
       return res.status(500).json({ message: "Signup failed" });
@@ -102,7 +114,7 @@ export async function registerRoutes(
       }
 
       const token = jwt.sign(
-        { id: user.id, email: user.email },
+        { id: user.id, email: user.email, isAdmin: user.isAdmin },
         JWT_SECRET,
         { expiresIn: "7d" }
       );
@@ -114,7 +126,7 @@ export async function registerRoutes(
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return res.json({ message: "Login successful", user: { id: user.id, email: user.email } });
+      return res.json({ message: "Login successful", user: { id: user.id, email: user.email, isAdmin: user.isAdmin } });
     } catch (error) {
       console.error("Login error:", error);
       return res.status(500).json({ message: "Login failed" });
@@ -130,7 +142,61 @@ export async function registerRoutes(
     if (!req.userId) {
       return res.status(401).json({ message: "Not authenticated" });
     }
-    return res.json({ id: req.userId, email: req.email });
+    return res.json({ id: req.userId, email: req.email, isAdmin: req.isAdmin });
+  });
+
+  // ── Admin Routes ──
+
+  app.get("/api/admin/emails", async (req: Request, res: Response) => {
+    if (!req.isAdmin) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+
+    try {
+      const emails = await storage.getWhitelistedEmails();
+      return res.json({ emails });
+    } catch (error) {
+      console.error("Error fetching emails:", error);
+      return res.status(500).json({ message: "Failed to fetch emails" });
+    }
+  });
+
+  app.post("/api/admin/emails", async (req: Request, res: Response) => {
+    if (!req.isAdmin) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+
+    try {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ message: "Email required" });
+      }
+
+      const result = await storage.addWhitelistedEmail(email);
+      return res.json({ message: "Email added", email: result });
+    } catch (error: any) {
+      if (error.message?.includes("UNIQUE")) {
+        return res.status(400).json({ message: "Email already whitelisted" });
+      }
+      console.error("Error adding email:", error);
+      return res.status(500).json({ message: "Failed to add email" });
+    }
+  });
+
+  app.delete("/api/admin/emails/:email", async (req: Request, res: Response) => {
+    if (!req.isAdmin) {
+      return res.status(403).json({ message: "Admin access required" });
+    }
+
+    try {
+      const { email } = req.params;
+      await storage.removeWhitelistedEmail(email);
+      return res.json({ message: "Email removed" });
+    } catch (error) {
+      console.error("Error removing email:", error);
+      return res.status(500).json({ message: "Failed to remove email" });
+    }
   });
 
   return httpServer;

@@ -7,6 +7,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Login from "@/pages/Login";
+import Signup from "@/pages/Signup";
+import Admin from "@/pages/Admin";
 
 import Board from "@/pages/Board";
 import Schedule from "@/pages/Schedule";
@@ -18,7 +20,7 @@ function useHashLocationNoQuery(): [string, (to: string) => void] {
   return [path, navigate];
 }
 
-function AppRouter({ isAuthenticated, isLoading }: { isAuthenticated: boolean; isLoading: boolean }) {
+function AppRouter({ isAuthenticated, isAdmin, isLoading }: { isAuthenticated: boolean; isAdmin: boolean; isLoading: boolean }) {
   if (isLoading) {
     return (
       <div className="h-screen flex items-center justify-center">
@@ -28,7 +30,13 @@ function AppRouter({ isAuthenticated, isLoading }: { isAuthenticated: boolean; i
   }
 
   if (!isAuthenticated) {
-    return <Login />;
+    return (
+      <Switch>
+        <Route path="/login" component={Login} />
+        <Route path="/signup" component={Signup} />
+        <Route component={Login} />
+      </Switch>
+    );
   }
 
   return (
@@ -36,6 +44,7 @@ function AppRouter({ isAuthenticated, isLoading }: { isAuthenticated: boolean; i
       <Route path="/" component={Board} />
       <Route path="/schedule" component={Schedule} />
       <Route path="/reporting" component={Reporting} />
+      <Route path="/admin" component={isAdmin ? Admin : NotFound} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -43,13 +52,20 @@ function AppRouter({ isAuthenticated, isLoading }: { isAuthenticated: boolean; i
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
         const res = await fetch("/api/auth/me");
-        setIsAuthenticated(res.ok);
+        if (res.ok) {
+          const data = await res.json();
+          setIsAuthenticated(true);
+          setIsAdmin(data.isAdmin || false);
+        } else {
+          setIsAuthenticated(false);
+        }
       } catch {
         setIsAuthenticated(false);
       } finally {
@@ -65,7 +81,7 @@ function App() {
       <TooltipProvider>
         <Toaster />
         <Router hook={useHashLocationNoQuery}>
-          <AppRouter isAuthenticated={isAuthenticated} isLoading={isLoading} />
+          <AppRouter isAuthenticated={isAuthenticated} isAdmin={isAdmin} isLoading={isLoading} />
         </Router>
       </TooltipProvider>
     </QueryClientProvider>

@@ -1,5 +1,5 @@
-import { users } from '@shared/schema';
-import type { User, InsertUser } from '@shared/schema';
+import { users, whitelistedEmails } from '@shared/schema';
+import type { User, InsertUser, WhitelistedEmail, InsertWhitelistedEmail } from '@shared/schema';
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import { eq } from "drizzle-orm";
@@ -9,21 +9,31 @@ sqlite.pragma("journal_mode = WAL");
 
 export const db = drizzle(sqlite);
 
-// Whitelisted emails
-const ALLOWED_EMAILS = [
-  "sal@satrianomarine.com",
-  "maria@satrianomarine.com",
-  "satrianomarine@gmail.com",
-];
-
-export function isEmailWhitelisted(email: string): boolean {
-  return ALLOWED_EMAILS.includes(email.toLowerCase());
+// Initialize with default whitelisted emails if they don't exist
+async function initializeWhitelist() {
+  const existing = await db.select().from(whitelistedEmails).all();
+  if (existing.length === 0) {
+    const defaultEmails = [
+      "sal@satrianomarine.com",
+      "maria@satrianomarine.com",
+      "satrianomarine@gmail.com",
+    ];
+    for (const email of defaultEmails) {
+      await db.insert(whitelistedEmails).values({ email }).catch(() => {});
+    }
+  }
 }
+
+initializeWhitelist().catch(console.error);
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  isEmailWhitelisted(email: string): Promise<boolean>;
+  getWhitelistedEmails(): Promise<WhitelistedEmail[]>;
+  addWhitelistedEmail(email: string): Promise<WhitelistedEmail>;
+  removeWhitelistedEmail(email: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -40,6 +50,25 @@ export class DatabaseStorage implements IStorage {
       ...insertUser,
       email: insertUser.email.toLowerCase(),
     }).returning().get();
+  }
+
+  async isEmailWhitelisted(email: string): Promise<boolean> {
+    const result = await db.select().from(whitelistedEmails)
+      .where(eq(whitelistedEmails.email, email.toLowerCase()))
+      .get();
+    return !!result;
+  }
+
+  async getWhitelistedEmails(): Promise<WhitelistedEmail[]> {
+    return db.select().from(whitelistedEmails).all();
+  }
+
+  async addWhitelistedEmail(email: string): Promise<WhitelistedEmail> {
+    return db.insert(whitelistedEmails).values({ email: email.toLowerCase() }).returning().get();
+  }
+
+  async removeWhitelistedEmail(email: string): Promise<void> {
+    await db.delete(whitelistedEmails).where(eq(whitelistedEmails.email, email.toLowerCase()));
   }
 }
 

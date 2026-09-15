@@ -10,6 +10,7 @@ export const users = sqliteTable("users", {
   id:        integer("id").primaryKey({ autoIncrement: true }),
   email:     text("email").notNull().unique(),
   password:  text("password").notNull(),
+  isAdmin:   integer("is_admin", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at").notNull().default(new Date().toISOString()),
 });
 
@@ -20,6 +21,23 @@ export const insertUserSchema = createInsertSchema(users).pick({
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
+
+// ---------------------
+// Whitelisted Emails
+// ---------------------
+
+export const whitelistedEmails = sqliteTable("whitelisted_emails", {
+  id:        integer("id").primaryKey({ autoIncrement: true }),
+  email:     text("email").notNull().unique(),
+  createdAt: text("created_at").notNull().default(new Date().toISOString()),
+});
+
+export const insertWhitelistedEmailSchema = createInsertSchema(whitelistedEmails).pick({
+  email: true,
+});
+
+export type InsertWhitelistedEmail = z.infer<typeof insertWhitelistedEmailSchema>;
+export type WhitelistedEmail = typeof whitelistedEmails.$inferSelect;
 
 // ---------------------
 // Customers

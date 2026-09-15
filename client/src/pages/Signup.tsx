@@ -2,20 +2,32 @@ import { useState } from "react";
 import { useLocation } from "wouter";
 import { Wrench, ArrowRight } from "lucide-react";
 
-export default function Login() {
+export default function Signup() {
   const [, navigate] = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (password !== confirmPassword) {
+      setError("Passwords don't match");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return;
+    }
+
     setLoading(true);
 
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -24,7 +36,7 @@ export default function Login() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Login failed");
+        setError(data.message || "Signup failed");
         return;
       }
 
@@ -50,7 +62,7 @@ export default function Login() {
 
         {/* Card */}
         <div className="bg-card border border-border rounded-lg p-6 shadow-lg">
-          <h2 className="text-lg font-semibold mb-6">Sign In</h2>
+          <h2 className="text-lg font-semibold mb-6">Create Account</h2>
 
           {error && (
             <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-600 text-sm">
@@ -77,7 +89,19 @@ export default function Login() {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="At least 8 characters"
+                className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1.5">Confirm Password</label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
                 className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                 required
               />
@@ -86,25 +110,25 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2 rounded-lg bg-primary text-primary-foreground font-semibold hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {loading ? "Signing In..." : "Sign In"}
+              {loading ? "Creating..." : <>Create Account</>}
             </button>
           </form>
 
           <div className="mt-4 text-center text-sm text-muted-foreground">
-            Don't have an account?{" "}
+            Already have an account?{" "}
             <button
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/login")}
               className="text-primary hover:underline font-medium"
             >
-              Create one
+              Sign In
             </button>
           </div>
         </div>
 
         <p className="text-xs text-muted-foreground/60 text-center mt-6">
-          Only authorized team members can access this site.
+          Only authorized team members can create accounts.
         </p>
       </div>
     </div>

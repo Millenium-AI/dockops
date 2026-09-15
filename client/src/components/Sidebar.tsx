@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import {
-  LayoutDashboard, CalendarRange, BarChart3, Wrench, ChevronLeft, ChevronRight, LogOut,
+  LayoutDashboard, CalendarRange, BarChart3, Wrench, ChevronLeft, ChevronRight, LogOut, Settings,
 } from "lucide-react";
 import {
   Tooltip, TooltipTrigger, TooltipContent, TooltipProvider,
@@ -13,9 +13,14 @@ const NAV = [
   { href: "/reporting", label: "Reports",   icon: BarChart3 },
 ];
 
+const ADMIN_NAV = [
+  { href: "/admin", label: "Admin", icon: Settings },
+];
+
 export function Sidebar() {
   const [loc] = useLocation();
   const [collapsed, setCollapsed] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const handleResize = () => {
@@ -26,6 +31,22 @@ export function Sidebar() {
     handleResize();
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      try {
+        const res = await fetch("/api/auth/me");
+        if (res.ok) {
+          const data = await res.json();
+          setIsAdmin(data.isAdmin || false);
+        }
+      } catch (err) {
+        console.error("Failed to check admin status:", err);
+      }
+    };
+
+    checkAdmin();
   }, []);
 
   const width = collapsed
@@ -95,6 +116,50 @@ export function Sidebar() {
                 </li>
               );
             })}
+
+            {/* Admin nav - only show if user is admin */}
+            {isAdmin && (
+              <>
+                <li className="pt-2 mt-2 border-t border-border">
+                  <div className={`text-[10px] uppercase tracking-wider text-muted-foreground/60 px-3 py-2 ${collapsed ? "hidden" : ""}`}>
+                    Admin
+                  </div>
+                </li>
+                {ADMIN_NAV.map(({ href, label, icon: Icon }) => {
+                  const active = loc.startsWith(href);
+                  return (
+                    <li key={href}>
+                      <Link
+                        href={href}
+                        className={`
+                          flex items-center rounded-md text-sm transition-colors h-9
+                          ${collapsed ? "px-0 justify-center" : "gap-2.5 px-3"}
+                          ${active
+                            ? "bg-primary/10 text-foreground border border-primary/20"
+                            : "text-muted-foreground hover:bg-muted/50"}
+                        `}
+                      >
+                        {collapsed ? (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="grid place-items-center">
+                                <Icon className={`w-4 h-4 shrink-0 ${active ? "text-primary" : ""}`} strokeWidth={1.8} />
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="right">
+                              {label}
+                            </TooltipContent>
+                          </Tooltip>
+                        ) : (
+                          <Icon className={`w-4 h-4 shrink-0 ${active ? "text-primary" : ""}`} strokeWidth={1.8} />
+                        )}
+                        {!collapsed && <span className="font-medium">{label}</span>}
+                      </Link>
+                    </li>
+                  );
+                })}
+              </>
+            )}
           </ul>
 
           {/* Collapse toggle */}
