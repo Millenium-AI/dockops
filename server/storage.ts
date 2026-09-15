@@ -9,22 +9,45 @@ sqlite.pragma("journal_mode = WAL");
 
 export const db = drizzle(sqlite);
 
+// Initialize schema if tables don't exist
+sqlite.exec(`
+  CREATE TABLE IF NOT EXISTS whitelisted_emails (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT NOT NULL UNIQUE,
+    password TEXT NOT NULL,
+    isAdmin INTEGER NOT NULL DEFAULT 0,
+    createdAt TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+`);
+
 // Initialize with default whitelisted emails if they don't exist
 async function initializeWhitelist() {
-  const existing = await db.select().from(whitelistedEmails).all();
-  if (existing.length === 0) {
-    const defaultEmails = [
-      "sal@satrianomarine.com",
-      "maria@satrianomarine.com",
-      "satrianomarine@gmail.com",
-    ];
-    for (const email of defaultEmails) {
-      await db.insert(whitelistedEmails).values({ email }).catch(() => {});
+  try {
+    // Try to check if table exists by querying it
+    const existing = await db.select().from(whitelistedEmails).all();
+    if (existing.length === 0) {
+      const defaultEmails = [
+        "sal@satrianomarine.com",
+        "maria@satrianomarine.com",
+        "satrianomarine@gmail.com",
+      ];
+      for (const email of defaultEmails) {
+        await db.insert(whitelistedEmails).values({ email }).catch(() => {});
+      }
     }
+  } catch (err: any) {
+    // Table doesn't exist yet - will be created by drizzle or on first access
+    console.log("Whitelist table not found, will initialize on first use");
   }
 }
 
-initializeWhitelist().catch(console.error);
+initializeWhitelist();
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
